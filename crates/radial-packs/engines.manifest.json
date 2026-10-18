@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "engines": {
+    "pandoc": {
+      "version": "3.12.1",
+      "platforms": {
+        "macos-aarch64": {
+          "url": "https://github.com/jgm/pandoc/releases/download/3.12.1/pandoc-3.12.1-arm64-macOS.zip",
+          "sha256": "c2146cf33a583f3ac93eccddf1bb662371d5cfcce1aad1c87ad860cca1435d46",
+          "archive": "zip",
+          "bin": "pandoc-3.12.1-arm64/bin/pandoc",
+          "size_bytes": 42313957
+        },
+        "macos-x86_64": {
+          "url": "https://github.com/jgm/pandoc/releases/download/3.12.1/pandoc-3.12.1-x86_64-macOS.zip",
+          "sha256": "81ed3e2cfecf096df15d407152f89a684fd65221082b919963f738e977fad3bc",
+          "archive": "zip",
+          "bin": "pandoc-3.12.1-x86_64/bin/pandoc",
+          "size_bytes": 26487481
+        },
+        "windows-x86_64": {
+          "url": "https://github.com/jgm/pandoc/releases/download/3.12.1/pandoc-3.12.1-windows-x86_64.zip",
+          "sha256": "6ef431cb20b2c24a0371fc19200dc49d452be54b1b5c9239f3462841ef53e587",
+          "archive": "zip",
+          "bin": "pandoc-3.12.1/pandoc.exe",
+          "size_bytes": 42154914
+        }
+      }
+    },
+    "ffmpeg": {
+      "version": "9.0.2",
+      "platforms": {
+        "macos-aarch64": {
+          "url": "https://ffmpeg.martin-riedl.de/download/macos/arm64/1789931890_9.0.2/ffmpeg.zip",
+          "sha256": "c8ed4c4e6978a03c485edbfe4e0a5dc2380f8a30bba5150531b31b094492d924",
+          "archive": "zip",
+          "bin": "ffmpeg",
+          "size_bytes": 28395699
+        },
+        "macos-x86_64": {
+          "url": "https://ffmpeg.martin-riedl.de/download/macos/amd64/1789931006_9.0.2/ffmpeg.zip",
+          "sha256": "7c6b4125b191cbf773832dc51f424cf2b6bb7da43007d1e066f95909e47cacd4",
+          "archive": "zip",
+          "bin": "ffmpeg",
+          "size_bytes": 33816391
+        },
+        "windows-x86_64": {
+          "url": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-10-18-13-01/ffmpeg-n9.0.2-28-g669f5ab083-win64-lgpl-shared-9.0.zip",
+          "sha256": "bc5a0e82b643605ae067f10aacdb4fcd27747779deefa52275d600695b2b1d48",
+          "archive": "zip",
+          "bin": "ffmpeg-n9.0.2-28-g669f5ab083-win64-lgpl-shared-9.0/bin/ffmpeg.exe",
+          "size_bytes": 77232696
+        }
+      }
+    },
+    "libreoffice": {
+      "version": "26.8.1",
+      "platforms": {
+        "macos-aarch64": {
+          "url": "https://download.documentfoundation.org/libreoffice/stable/26.8.1/mac/aarch64/LibreOffice_26.8.1_MacOS_aarch64.dmg",
+          "sha256": "ca074e0b13571efb30a31fc531c5f95e997030637325e5d5de92d67aefdf0dfc",
+          "archive": "dmg",
+          "bin": "LibreOffice.app/Contents/MacOS/soffice",
+          "size_bytes": 298845477
+        },
+        "macos-x86_64": {
+          "url": "https://download.documentfoundation.org/libreoffice/stable/26.8.1/mac/x86_64/LibreOffice_26.8.1_MacOS_x86-64.dmg",
+          "sha256": "4c7464313a529e9074400cbcdc894fc40ac4ef9421ded03b16b5a78d12cb155e",
+          "archive": "dmg",
+          "bin": "LibreOffice.app/Contents/MacOS/soffice",
+          "size_bytes": 309092706
+        },
+        "windows-x86_64": {
+          "url": "https://download.documentfoundation.org/libreoffice/stable/26.8.1/win/x86_64/LibreOffice_26.8.1_Win_x86-64.msi",
+          "sha256": "c6298b10cfa1748bcbedad94c62ce771e240e5021bfd6d7a967cd571b04b5312",
+          "archive": "msi",
+          "bin": "LibreOffice/program/soffice.exe",
+          "size_bytes": 374870016
+        }
+      }
+    }
+  }
+}

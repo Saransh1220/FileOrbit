@@ -1,0 +1,46 @@
+/* Shared design tokens for every window. Light by default, dark via the OS
+   (or forced with data-theme on <html>, which the design playground uses). */
+:root {
+  --fg: #1f2330;
+  --fg-muted: #6b7180;
+  --app-bg: #f5f6f8;
+
+  --surface: #ffffff;
+  --hairline: #dfe2e9;
+  --ambient: rgba(20, 24, 36, 0.16);
+
+  --accent: #4f7bb8;
+  --on-accent: #ffffff;
+  --ok: #3f9d78;
+  --err: #c2564f;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --fg: #eceef4;
+    --fg-muted: #9aa0b0;
+    --app-bg: #1b1d23;
+
+    --surface: #1f2229;
+    --hairline: #363a46;
+    --ambient: rgba(0, 0, 0, 0.45);
+
+    --accent: #6c97d6;
+    --ok: #52b48d;
+    --err: #d9736c;
+  }
+}
+
+:root[data-theme="dark"] {
+  --fg: #eceef4;
+  --fg-muted: #9aa0b0;
+  --app-bg: #1b1d23;
+
+  --surface: #1f2229;
+  --hairline: #363a46;
+  --ambient: rgba(0, 0, 0, 0.45);
+
+  --accent: #6c97d6;
+  --ok: #52b48d;
+  --err: #d9736c;
+}

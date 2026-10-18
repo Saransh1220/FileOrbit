@@ -1,0 +1,57 @@
+# Builds and tests on the two platforms we ship for. Windows can't be checked
+# from a Mac (native C dependencies need the Windows toolchain), so this is the
+# real Windows verification.
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  packs-cli:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: crates/radial-packs
+      - name: Test the installer crate
+        working-directory: crates/radial-packs
+        run: cargo test
+
+  app:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: app/src-tauri
+      - name: Build the web UI (the Tauri build embeds it)
+        working-directory: app
+        run: |
+          npm ci
+          npm run build
+      - name: Test the app crate
+        working-directory: app/src-tauri
+        run: cargo test
+
+  scripts:
+    # install.sh is macOS-only; the mirror tool is plain Python.
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test the install and mirror scripts
+        run: python3 -m unittest discover -s scripts -p "test_*.py"

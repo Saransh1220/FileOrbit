@@ -1,0 +1,209 @@
+html,
+body,
+#root {
+  margin: 0;
+  background: transparent;
+  overflow: hidden;
+  user-select: none;
+}
+
+.ring {
+  position: relative;
+  font-family: -apple-system, "Segoe UI", sans-serif;
+}
+
+.ring > svg {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  /* One faint ambient shadow so the flat dial separates from busy wallpapers. */
+  filter: drop-shadow(0 2px 10px var(--ambient));
+}
+
+/* ---- segments: flat surfaces with a hairline edge ---- */
+.seg {
+  --face: var(--surface);
+  --edge: var(--hairline);
+  transform-box: view-box;
+  transform-origin: center;
+  transition:
+    transform 220ms cubic-bezier(0.18, 1.1, 0.3, 1.25),
+    opacity 180ms ease;
+  animation: seg-in 380ms cubic-bezier(0.2, 1, 0.3, 1.1) backwards;
+  animation-delay: calc(var(--i) * 34ms);
+}
+
+/* Fill and stroke share one color (the stroke rounds the corners). The edge
+   path is 2px wider than the face path, so 1px of it shows around the face. */
+.seg path {
+  stroke-linejoin: round;
+  transition:
+    fill 180ms ease,
+    stroke 180ms ease;
+}
+
+.seg .edge {
+  fill: var(--edge);
+  stroke: var(--edge);
+  stroke-width: 16;
+}
+
+.seg .face {
+  fill: var(--face);
+  stroke: var(--face);
+  stroke-width: 14;
+}
+
+.seg.hot {
+  --face: color-mix(in srgb, var(--c) 14%, var(--surface));
+  --edge: color-mix(in srgb, var(--c) 70%, var(--surface));
+  transform: scale(1.07);
+}
+
+.seg.chosen {
+  --face: color-mix(in srgb, var(--ok) 20%, var(--surface));
+  --edge: var(--ok);
+  animation: chosen-pop 640ms cubic-bezier(0.2, 0.9, 0.3, 1.2) forwards;
+}
+
+.seg.faded {
+  opacity: 0;
+  transform: scale(0.94);
+}
+
+/* ---- icon + label inside each segment ---- */
+.slot {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.content {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: color-mix(in srgb, var(--c) 78%, var(--fg));
+  transition:
+    transform 220ms cubic-bezier(0.18, 1.1, 0.3, 1.25),
+    color 160ms ease,
+    opacity 180ms ease;
+  animation: fade-in 300ms ease backwards;
+  animation-delay: calc(var(--i) * 34ms + 90ms);
+}
+
+.content svg {
+  width: 20px;
+  height: 20px;
+}
+
+.ext {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  line-height: 1;
+  color: var(--fg-muted);
+  transition: color 160ms ease;
+}
+
+.content.hot {
+  transform: translate(-50%, -50%) scale(1.12);
+  color: var(--c);
+}
+
+.content.hot .ext {
+  color: var(--c);
+}
+
+.content.chosen {
+  color: var(--ok);
+}
+
+.content.faded {
+  opacity: 0;
+}
+
+/* ---- center disc ---- */
+.hub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  box-sizing: border-box;
+  transform: translate(-50%, -50%);
+  padding: 0 8px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  color: var(--fg);
+  pointer-events: none;
+  animation: fade-in 260ms ease backwards;
+}
+
+.hub .caption {
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.hub .main {
+  max-width: 100%;
+  overflow: hidden;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.hub.label .main {
+  margin-top: 1px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--c);
+}
+
+.hub.name .main,
+.hub.note .main {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  font-size: 10px;
+  word-break: break-all;
+  color: var(--fg-muted);
+}
+
+@keyframes seg-in {
+  from {
+    opacity: 0;
+    transform: rotate(-16deg) scale(0.8);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes chosen-pop {
+  0% {
+    transform: scale(1.07);
+    opacity: 1;
+  }
+  30%,
+  72% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.16);
+    opacity: 0;
+  }
+}

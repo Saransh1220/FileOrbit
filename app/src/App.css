@@ -1,0 +1,26 @@
+/* Status window only. Scoped to .app so it cannot tint the transparent overlay and toast windows. */
+.app {
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 24px;
+  background: var(--app-bg);
+  color: var(--fg);
+  font-family: -apple-system, "Segoe UI", sans-serif;
+}
+
+.app h1 {
+  margin: 0 0 12px;
+  font-size: 22px;
+}
+
+.status {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+}
+
+.status.permission-denied,
+.status.error {
+  border-color: var(--err);
+}

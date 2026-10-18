@@ -1,0 +1,68 @@
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+$RECYCLE.BIN/
+
+# Build output and dependencies
+node_modules/
+dist/
+dist-ssr/
+target/
+app/src-tauri/gen/
+*.tsbuildinfo
+
+# Installers and bundles produced by builds
+*.app
+*.dmg
+*.msi
+*.exe
+*.nsis
+*.pkg
+!scripts/*.exe
+
+# Secrets and signing material: never commit
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.cer
+*.crt
+*.keychain
+*.keychain-db
+*.mobileprovision
+*.p8
+secrets/
+credentials*.json
+
+# Mirror tool download cache and downloaded engines
+.mirror-cache/
+engines/
+engines.manifest.mirrored.json
+
+# Files the converter writes next to its inputs while testing
+test-data/*.wav
+test-data/*.pdf
+test-data/*.flac
+test-data/*.aac
+test-data/*.m4a
+test-data/*.ogg
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Editor, AI assistant local state and logs
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.claude/
+*.local
+*.log
+npm-debug.log*
