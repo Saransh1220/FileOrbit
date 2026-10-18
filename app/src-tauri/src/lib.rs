@@ -1,6 +1,12 @@
 pub mod engine;
 mod hook;
 mod overlay;
+#[cfg(target_os = "windows")]
+mod overlay_catcher;
+#[cfg(target_os = "windows")]
+mod overlay_drop;
+#[cfg(target_os = "windows")]
+mod overlay_native;
 mod reveal;
 mod status;
 mod toast;
@@ -61,6 +67,14 @@ pub fn run() {
             status::get_hook_status
         ])
         .on_window_event(|window, event| {
+            // The overlay and toast are created once and reused; closing one
+            // (Alt+F4) must hide it, never destroy it.
+            if window.label() != "main" {
+                if let WindowEvent::CloseRequested { api, .. } = event {
+                    api.prevent_close();
+                    let _ = window.hide();
+                }
+            }
             // The status window is secondary: closing it hides it, the app
             // keeps running from the menu bar.
             if window.label() == "main" {

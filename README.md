@@ -14,7 +14,7 @@ Existing files are never overwritten: a second conversion gives `report (1).pdf`
 | Platform | State |
 |---|---|
 | **macOS** | Works: Shift+drag, the dial, conversions, install prompts, the `radial` CLI. |
-| **Windows** | **Not working yet.** The converter engine, the `radial` CLI and the installer code are cross-platform, but the global Shift+drag detection is a stub (`app/src-tauri/src/hook/win.rs`), so the dial never opens. See `docs/WINDOWS_HANDOFF.md`. |
+| **Windows** | **Partly working.** Shift+drag from Explorer or the desktop opens the dial, and a drop on a wedge reaches the conversion code (tried on one Windows 11 PC with a missing-pack prompt; conversions themselves, the `radial` CLI, `install.ps1` and the installer have not been run there). See `docs/WINDOWS_HANDOFF.md`. |
 
 ## Converters are optional packs
 
@@ -59,7 +59,7 @@ python3 -m unittest discover -s scripts      # install.sh and the mirror tool (i
 |---|---|
 | `app/` | The Tauri app: React UI in `src/`, Rust in `src-tauri/` |
 | `app/src-tauri/src/engine/` | Format registry, converters, jobs, naming |
-| `app/src-tauri/src/hook/` | Global Shift+drag detection (macOS done, Windows stub) |
+| `app/src-tauri/src/hook/` | Global Shift+drag detection (`mac.rs`; `win/` mouse hook + Explorer selection) |
 | `crates/radial-packs/` | The pack installer library and the `radial` CLI |
 | `scripts/` | Install scripts and the engine-mirroring tool |
 | `docs/` | Plans and the release guide |

@@ -12,4 +12,13 @@ export interface Point {
 export interface RingOpened {
   name: string;
   targets: Wedge[];
+  /** The dragged files; needed on Windows, where the drop event carries no paths. */
+  paths: string[];
+}
+
+/** Payload of the "ring-drag" event (Windows): pointer in physical pixels, overlay-relative. */
+export interface RingDrag {
+  kind: "enter" | "over" | "leave" | "drop";
+  x: number;
+  y: number;
 }

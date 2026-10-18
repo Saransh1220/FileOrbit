@@ -2,16 +2,17 @@
 
 Everything here was written and tested on a Mac. This lists what is known to work, what has never run on Windows, and the one big piece that does not exist yet.
 
-## The big gap: the Windows app cannot open the dial yet
+## How the Windows Shift+drag works (built, lightly tested)
 
-`app/src-tauri/src/hook/win.rs` is a stub that only reports "unsupported". Without the global Shift+drag detection, a Windows build starts, shows a menu-bar/tray icon and the status window, and **does nothing else**. Do not publish a Windows installer as "working" until this exists.
+Tried by hand on one Windows 11 PC: the dial opens on Shift+drag from an Explorer window, the drop is received, and a missing pack triggers the install prompt. Not yet tried: a full conversion, the desktop, Explorer tabs beyond one, several monitors, mixed DPI.
 
-What to build (the trigger rules are already written and tested; they are OS-independent):
+- **Mouse hook** (`hook/win/mouse_hook.rs`): `WH_MOUSE_LL` on its own thread. It only forwards events over a channel; `hook/win/mod.rs` runs the shared `DragTrigger` on a worker thread.
+- **Is it a file drag?** (`hook/win/explorer.rs`): Windows cannot show what is inside an in-flight drag, so the press must start on an Explorer window or the desktop, and the files are that window's selection, read through the shell COM API (`IShellWindows`, the visible tab). The ring's wedges therefore know the file type up front, as on macOS.
+- **Overlay** (`overlay_native.rs`): shown as a non-activating tool window so the drag is not cancelled. Positioned in physical pixels using the monitor's scale.
+- **Receiving the drop** (`overlay_catcher.rs`, `overlay_drop.rs`): the webview's own drop handling never saw Explorer's drag (its windows belong to the WebView2 process), so an invisible native window is laid over the ring and carries our own OLE drop target. It always answers "copy", so the source file is never moved, and it sends `ring-drag` events to the page. `useRingDrag.ts` uses those events on Windows and Tauri's drop events on macOS.
+- **Debugging a dead drag:** a plain WinForms window received the same Explorer drag, which is how the webview was ruled out as the receiver.
 
-- **Mouse hook:** a low-level hook (`SetWindowsHookEx` with `WH_MOUSE_LL`) on its own thread, feeding `DragTrigger` in `hook/trigger.rs` (button down, move, button up). Shift state: `GetAsyncKeyState(VK_SHIFT)`. The `windows` crate is the usual binding. Mirror what `hook/mac.rs` does.
-- **Is it a file drag?** macOS reads the drag pasteboard; Windows has no way to read drag data while it is in flight. Use a heuristic (the window under the cursor belongs to Explorer or the desktop) to *open* the ring, then rely on the drop: the overlay window receives the real file paths through Tauri's drag-drop event, and if there are none it just closes. The ring's wedges need the file type up front, so either show a neutral ring first and fill it when the drag enters, or read the selection from Explorer (shell COM). Decide this early; it shapes the UX.
-- **Overlay window:** the Tauri window defined in `tauri.conf.json` (transparent, always on top, no decorations). It must not take focus (`WS_EX_NOACTIVATE`), or the drag is cancelled. Position uses physical pixels on Windows (the macOS code uses logical points). Check `app/src/ring/platform.ts` too: it already treats drag positions as physical pixels on Windows.
-- **Known traps:** Shift+drag in Explorer means *move*, so the overlay must accept the drop as copy and never move or delete the source. The hook cannot see windows running as administrator unless the app also does (UIPI). Multi-monitor and DPI scaling need testing.
+Still to do for Windows: elevated Explorer windows (UIPI), multi-monitor and DPI checks, edge clamping of the ring, and a keyboard Esc to cancel.
 
 ## Things that exist but have never run on Windows
 
@@ -30,10 +31,10 @@ What to build (the trigger rules are already written and tested; they are OS-ind
 ## Order I would do things in
 
 1. Install Rust (MSVC toolchain), Node 22, Git, the GitHub CLI. Windows 11 already has WebView2.
-2. `cd app && npm ci && npm run tauri dev`. The status window should say the hook is unsupported.
+2. `cd app && npm ci && npm run tauri dev`. Start it from your own terminal, not from an automated or sandboxed shell. Install the "Desktop development with C++" build tools and the Windows SDK first.
 3. Run both Rust test suites and the real-download test above. Fix whatever Windows-specific problems show up.
 4. Create the GitHub repo, add a `LICENSE`, replace the app icons (`npm run tauri icon`), push, and watch the `ci` workflow.
-5. Build the Windows hook and overlay behaviour (the gap above).
+5. Harden the Windows hook and overlay (see "Still to do" above).
 6. Then follow `docs/RELEASE.md`: mirror the engines, add signing secrets, tag, review the draft release, publish.
 
 ## Context worth keeping

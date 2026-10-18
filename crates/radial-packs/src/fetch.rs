@@ -116,7 +116,8 @@ mod tests {
     #[test]
     fn missing_file_url_is_an_error() {
         let dir = tempfile::tempdir().unwrap();
-        let err = download("file:///definitely/not/here.bin", &dir.path().join("x"), &mut |_, _| {}).unwrap_err();
+        let missing = url::Url::from_file_path(dir.path().join("not-here.bin")).unwrap().to_string();
+        let err = download(&missing, &dir.path().join("x"), &mut |_, _| {}).unwrap_err();
         assert!(err.contains("cannot open"), "{err}");
     }
 }

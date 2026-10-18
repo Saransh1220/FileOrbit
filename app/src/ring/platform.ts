@@ -1,6 +1,6 @@
 import type { Point } from "./types";
 
-const IS_MAC = navigator.userAgent.includes("Mac");
+export const IS_MAC = navigator.userAgent.includes("Mac");
 
 /**
  * Drag-drop positions arrive in different units per OS: wry on macOS reports
