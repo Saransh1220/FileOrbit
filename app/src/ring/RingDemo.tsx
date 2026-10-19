@@ -21,14 +21,14 @@ const BACKGROUNDS: Record<string, string> = {
   "busy photo": "repeating-linear-gradient(45deg,#2b6a8f 0 18px,#e8b04a 18px 36px,#a23b52 36px 54px)",
 };
 
-const blank = { pack: null, pack_title: null, progress: null, message: null };
+const blank = { pack: null, pack_title: null, engine: null, download_mb: null, progress: null, message: null };
 
 const JOBS: Record<string, JobUpdate> = {
   running: { id: 1, name: "Patient Acknowledgement Screen.docx", target: "PDF", state: "running", output: null, error: null, ...blank },
   done: { id: 2, name: "Patient Acknowledgement Screen.docx", target: "PDF", state: "done", output: "/Users/me/Downloads/Patient Acknowledgement Screen.pdf", error: null, ...blank },
-  "needs-pack": { id: 4, name: "report.docx", target: "PDF", state: "needs-pack", output: null, error: null, pack: "documents", pack_title: "Documents", progress: null, message: null },
-  installing: { id: 5, name: "report.docx", target: "PDF", state: "installing", output: null, error: null, pack: "documents", pack_title: "Documents", progress: 42, message: "Downloading" },
-  unpacking: { id: 6, name: "report.docx", target: "PDF", state: "installing", output: null, error: null, pack: "documents", pack_title: "Documents", progress: null, message: "Unpacking" },
+  "needs-pack": { id: 4, name: "report.docx", target: "PDF", state: "needs-pack", output: null, error: null, pack: "documents", pack_title: "Documents", engine: "LibreOffice", download_mb: 375, progress: null, message: null },
+  installing: { id: 5, name: "report.docx", target: "PDF", state: "installing", output: null, error: null, pack: "documents", pack_title: "Documents", engine: "LibreOffice", download_mb: null, progress: 42, message: "Downloading LibreOffice: 157 of 375 MB" },
+  unpacking: { id: 6, name: "report.docx", target: "PDF", state: "installing", output: null, error: null, pack: "documents", pack_title: "Documents", engine: "LibreOffice", download_mb: null, progress: null, message: "Unpacking LibreOffice, this can take a minute" },
   failed: { id: 3, name: "report.docx", target: "PDF", state: "failed", output: null, error: "no download is published for libreoffice on macos-aarch64 and none is installed on this machine", ...blank },
 };
 

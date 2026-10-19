@@ -38,6 +38,10 @@ pub struct JobUpdate {
     /// For `NeedsPack` / `Installing`: the pack id and its display title.
     pub pack: Option<String>,
     pub pack_title: Option<String>,
+    /// For `NeedsPack` / `Installing`: the converter program(s) the pack needs, e.g. "ffmpeg".
+    pub engine: Option<String>,
+    /// For `NeedsPack`: download size in whole megabytes, when known.
+    pub download_mb: Option<u64>,
     /// 0-100 while a download size is known.
     pub progress: Option<u8>,
     /// Short phase text such as "Downloading" or "Unpacking".
@@ -55,6 +59,8 @@ impl JobUpdate {
             error: None,
             pack: None,
             pack_title: None,
+            engine: None,
+            download_mb: None,
             progress: None,
             message: None,
         }
@@ -93,20 +99,48 @@ pub fn missing_pack(
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Progress {
     pub percent: Option<u8>,
-    pub message: &'static str,
+    pub message: String,
+}
+
+/// Whole megabytes, rounded to nearest, as shown to the user.
+fn mb(bytes: u64) -> u64 {
+    (bytes + 500_000) / 1_000_000
 }
 
 pub fn progress_of(event: &Event) -> Progress {
-    match event {
-        Event::Downloading { done, total, .. } => Progress {
-            percent: total.filter(|t| *t > 0).map(|t| ((done * 100) / t).min(100) as u8),
-            message: "Downloading",
-        },
-        Event::Verifying { .. } => Progress { percent: None, message: "Verifying" },
-        Event::Extracting { .. } => Progress { percent: None, message: "Unpacking" },
-        Event::Adopted { .. } => Progress { percent: None, message: "Using the copy on this computer" },
-        Event::Installed { .. } => Progress { percent: Some(100), message: "Installed" },
-    }
+    let (percent, message) = match event {
+        Event::Downloading { engine, done, total } => (
+            total.filter(|t| *t > 0).map(|t| ((done * 100) / t).min(100) as u8),
+            match total.filter(|t| *t > 0) {
+                Some(t) => format!("Downloading {engine}: {} of {} MB", mb(*done), mb(t)),
+                None => format!("Downloading {engine}: {} MB", mb(*done)),
+            },
+        ),
+        Event::Verifying { engine } => (None, format!("Checking the {engine} download")),
+        Event::Extracting { engine } => (None, format!("Unpacking {engine}, this can take a minute")),
+        Event::Adopted { engine, .. } => (None, format!("Using {engine} already on this computer")),
+        Event::Installed { engine } => (Some(100), format!("{engine} installed")),
+    };
+    Progress { percent, message }
+}
+
+/// The converter program names a pack needs, and the size of what would be
+/// downloaded for it on this machine (None when that cannot be worked out).
+fn pack_needs(pack: &str) -> (String, Option<u64>) {
+    let names = radial_packs::catalog::pack(pack)
+        .map(|p| {
+            p.engines
+                .iter()
+                .map(|id| radial_packs::catalog::engine(id).map(|e| e.name).unwrap_or(id))
+                .collect::<Vec<_>>()
+                .join(" + ")
+        })
+        .unwrap_or_default();
+    let bytes = Installer::for_this_machine()
+        .and_then(|i| i.plan(&[pack.to_string()]))
+        .map(|plan| plan.download_bytes())
+        .ok();
+    (names, bytes)
 }
 
 /// Converts one file synchronously and returns the path written.
@@ -142,6 +176,9 @@ fn run(app: AppHandle, id: u64, input: PathBuf, target_id: String) {
         let mut update = base.with(JobState::NeedsPack);
         update.pack = Some(missing.pack.to_string());
         update.pack_title = Some(missing.title);
+        let (engine, bytes) = pack_needs(missing.pack);
+        update.engine = Some(engine);
+        update.download_mb = bytes.map(mb);
         crate::toast::publish(&app, &update);
         return;
     }
@@ -178,13 +215,15 @@ pub fn install_pack_for_job(app: AppHandle, id: u64) {
         let name = pending.input.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
         let base = JobUpdate::new(id, &name, &pending.target, JobState::Running);
         let title = radial_packs::catalog::pack(pending.pack).map(|p| p.title).unwrap_or(pending.pack);
+        let engine = pack_needs(pending.pack).0;
 
         let installing = |progress: Option<&Progress>| {
             let mut update = base.with(JobState::Installing);
             update.pack = Some(pending.pack.to_string());
             update.pack_title = Some(title.to_string());
+            update.engine = Some(engine.clone());
             update.progress = progress.and_then(|p| p.percent);
-            update.message = progress.map(|p| p.message.to_string());
+            update.message = progress.map(|p| p.message.clone());
             update
         };
         crate::toast::publish(&app, &installing(None));
@@ -251,7 +290,8 @@ mod tests {
     #[test]
     fn download_progress_is_a_percentage() {
         let p = progress_of(&Event::Downloading { engine: "ffmpeg".into(), done: 25, total: Some(100) });
-        assert_eq!(p, Progress { percent: Some(25), message: "Downloading" });
+        assert_eq!(p.percent, Some(25));
+        assert_eq!(p.message, "Downloading ffmpeg: 0 of 0 MB");
         let unknown = progress_of(&Event::Downloading { engine: "x".into(), done: 5, total: None });
         assert_eq!(unknown.percent, None);
         let zero = progress_of(&Event::Downloading { engine: "x".into(), done: 0, total: Some(0) });
@@ -266,7 +306,7 @@ mod tests {
 
     #[test]
     fn later_phases_have_their_own_labels() {
-        assert_eq!(progress_of(&Event::Verifying { engine: "x".into() }).message, "Verifying");
-        assert_eq!(progress_of(&Event::Extracting { engine: "x".into() }).message, "Unpacking");
+        assert_eq!(progress_of(&Event::Verifying { engine: "x".into() }).message, "Checking the x download");
+        assert!(progress_of(&Event::Extracting { engine: "x".into() }).message.starts_with("Unpacking x"));
     }
 }

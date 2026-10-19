@@ -31,12 +31,17 @@ function title(job: JobUpdate) {
     case "done":
       return `Saved ${fileName(job.output ?? "")}`;
     case "needs-pack":
-      return `Install ${job.pack_title}?`;
+      return `Install ${job.pack_title} support?`;
     case "installing":
-      return `Installing ${job.pack_title}…`;
+      return `Installing ${job.engine ?? "converter"} for ${job.pack_title}…`;
     default:
       return `Couldn’t convert to ${job.target}`;
   }
+}
+
+function needsPackDetail(job: JobUpdate) {
+  const size = job.download_mb === null ? "" : ` · ${job.download_mb} MB download`;
+  return `Needs ${job.engine ?? "a converter"}${size}`;
 }
 
 function detail(job: JobUpdate) {
@@ -44,9 +49,9 @@ function detail(job: JobUpdate) {
     case "failed":
       return job.error;
     case "needs-pack":
-      return `For ${job.name}`;
+      return needsPackDetail(job);
     case "installing": {
-      const percent = job.progress === null ? "" : ` ${job.progress}%`;
+      const percent = job.progress === null ? "" : ` · ${job.progress}%`;
       return `${job.message ?? "Starting"}${percent}`;
     }
     default:
