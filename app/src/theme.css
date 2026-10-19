@@ -13,6 +13,19 @@
   --on-accent: #ffffff;
   --ok: #3f9d78;
   --err: #c2564f;
+
+  --font: -apple-system, "Segoe UI", sans-serif;
+  --k-pdf: #c26a52;
+  --k-doc: #4f7bb8;
+  --k-text: #7a8794;
+  --k-code: #bf8d3f;
+  --k-markdown: #7f6cb0;
+  --k-image: #4f9a80;
+  --k-audio: #b5658c;
+  --k-video: #3f98a8;
+  --k-sheet: #6b9a49;
+  --k-slides: #c47d4c;
+  --k-book: #6070b5;
 }
 
 @media (prefers-color-scheme: dark) {

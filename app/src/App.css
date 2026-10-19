@@ -5,7 +5,7 @@
   padding: 24px;
   background: var(--app-bg);
   color: var(--fg);
-  font-family: -apple-system, "Segoe UI", sans-serif;
+  font-family: var(--font);
 }
 
 .app h1 {

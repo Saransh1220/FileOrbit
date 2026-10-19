@@ -1,0 +1,189 @@
+/* Blueprint: a dark technical HUD. Monospace, hairlines, one cyan accent. It
+   brings its own palette so it looks the same in light and dark themes. */
+.blueprint {
+  position: relative;
+  --bp-plate: oklch(0.18 0.022 245);
+  --bp-line: oklch(0.43 0.05 235);
+  --bp-dim: oklch(0.62 0.035 235);
+  --bp-text: oklch(0.92 0.02 225);
+  --bp-accent: oklch(0.83 0.13 195);
+  --bp-ok: oklch(0.82 0.14 155);
+  font-family: "Cascadia Mono", "SF Mono", ui-monospace, Consolas, monospace;
+}
+
+.blueprint > svg {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+
+.blueprint .plate {
+  fill: var(--bp-plate);
+  stroke: var(--bp-line);
+  stroke-width: 1;
+  animation: bp-fade 320ms ease backwards;
+}
+
+.blueprint .ticks {
+  fill: none;
+  stroke: var(--bp-line);
+  stroke-width: 1;
+  animation: bp-fade 520ms ease backwards;
+}
+
+.blueprint .guide {
+  fill: none;
+  stroke: var(--bp-line);
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+}
+
+.blueprint .sector {
+  fill: transparent;
+  stroke: var(--bp-line);
+  stroke-width: 1.25;
+  stroke-linejoin: miter;
+  transition:
+    fill 140ms ease,
+    stroke 140ms ease,
+    opacity 180ms ease;
+  animation: bp-fade 300ms ease backwards;
+  animation-delay: calc(var(--i) * 36ms);
+}
+
+.blueprint .sector.hot {
+  fill: color-mix(in srgb, var(--bp-accent) 18%, transparent);
+  stroke: var(--bp-accent);
+}
+
+.blueprint .sector.chosen {
+  fill: color-mix(in srgb, var(--bp-ok) 24%, transparent);
+  stroke: var(--bp-ok);
+  animation: bp-chosen 520ms ease forwards;
+}
+
+.blueprint .sector.faded {
+  opacity: 0;
+}
+
+.blueprint .slot {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.blueprint .content {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--bp-dim);
+  transition:
+    color 140ms ease,
+    opacity 180ms ease;
+  animation: bp-fade 300ms ease backwards;
+  animation-delay: calc(var(--i) * 36ms + 80ms);
+}
+
+.blueprint .content svg {
+  width: 19px;
+  height: 19px;
+  stroke-width: 1.5;
+}
+
+.blueprint .ext {
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  line-height: 1;
+}
+
+.blueprint .content.hot {
+  color: var(--bp-accent);
+}
+
+.blueprint .content.chosen {
+  color: var(--bp-ok);
+}
+
+.blueprint .content.faded {
+  opacity: 0;
+}
+
+/* ---- hub: a readout ---- */
+.blueprint .hub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 78px;
+  height: 78px;
+  box-sizing: border-box;
+  transform: translate(-50%, -50%);
+  padding: 0 6px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--bp-text);
+  background: var(--bp-plate);
+  border: 1px solid var(--bp-line);
+  pointer-events: none;
+  transition: border-color 140ms ease;
+  animation: bp-fade 280ms ease backwards;
+}
+
+.blueprint .hub.lit {
+  border-color: var(--bp-accent);
+}
+
+.blueprint .hub .caption {
+  font-size: 7.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bp-dim);
+}
+
+.blueprint .hub .main {
+  max-width: 100%;
+  overflow: hidden;
+  line-height: 1.25;
+}
+
+.blueprint .hub.label .main {
+  margin-top: 2px;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--bp-accent);
+}
+
+.blueprint .hub.name .main,
+.blueprint .hub.note .main {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  font-size: 9px;
+  word-break: break-all;
+  color: var(--bp-dim);
+}
+
+@keyframes bp-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes bp-chosen {
+  0%,
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}

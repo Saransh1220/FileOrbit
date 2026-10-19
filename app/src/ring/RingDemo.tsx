@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { ToastView } from "../toast/ToastView";
 import type { JobUpdate } from "../toast/types";
-import { RingView } from "./RingView";
+import "../toast/ToastSkins.css";
+import { RING_VARIANTS, type RingVariant } from "./variants/ringVariants";
 import type { Wedge } from "./types";
 
 const toWedges = (ids: string[]): Wedge[] => ids.map((id) => ({ id, label: id.toUpperCase() }));
@@ -43,6 +44,8 @@ export function RingDemo() {
   const [confirmed, setConfirmed] = useState<number | null>(null);
   const [bg, setBg] = useState("light wallpaper");
   const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [design, setDesign] = useState("orbit");
+  const [compare, setCompare] = useState(true);
   const [job, setJob] = useState("done");
   const [replay, setReplay] = useState(0);
 
@@ -58,17 +61,45 @@ export function RingDemo() {
   };
   const count = SETS[set].length;
 
+
+  const show = ({ View }: RingVariant) => (
+    <>
+      <View
+        key={replay}
+        wedges={SETS[set]}
+        fileName={FILE}
+        hovered={hovered}
+        confirmed={confirmed}
+        onConfirmed={() => {}}
+      />
+      <div style={{ width: 420 }}>
+        <ToastView job={JOBS[job]} onDismiss={() => {}} onReveal={() => {}} onInstall={() => {}} />
+      </div>
+    </>
+  );
+
   return (
-    <div style={{ minHeight: "100vh", padding: 20, boxSizing: "border-box", background: BACKGROUNDS[bg], fontFamily: "-apple-system, sans-serif" }}>
+    <div style={{ height: "100vh", overflow: "auto", padding: 20, boxSizing: "border-box", background: BACKGROUNDS[bg], fontFamily: "-apple-system, sans-serif" }}>
       <div style={bar}>
         {Object.keys(SETS).map((k) => (
           <button key={k} onClick={() => pick(k)}>{k}</button>
         ))}
       </div>
       <div style={bar}>
+        <button onClick={() => setCompare(!compare)} style={{ fontWeight: compare ? 700 : 400 }}>compare all</button>
+        {RING_VARIANTS.map((v) => (
+          <button key={v.id} onClick={() => { setDesign(v.id); setCompare(false); }} style={{ fontWeight: !compare && v.id === design ? 700 : 400 }}>design: {v.label}</button>
+        ))}
+      </div>
+      <div style={bar}>
         <button onClick={() => setTheme(theme === "light" ? "dark" : "light")}>theme: {theme}</button>
         {Object.keys(BACKGROUNDS).map((k) => (
           <button key={k} onClick={() => setBg(k)}>{k}</button>
+        ))}
+      </div>
+      <div style={bar}>
+        {Object.keys(JOBS).map((k) => (
+          <button key={k} onClick={() => setJob(k)} style={{ fontWeight: k === job ? 700 : 400 }}>toast: {k}</button>
         ))}
       </div>
       <div style={bar}>
@@ -80,23 +111,18 @@ export function RingDemo() {
         <button onClick={() => { setConfirmed(null); setReplay((n) => n + 1); }}>replay open</button>
       </div>
 
-      <RingView
-        key={replay}
-        wedges={SETS[set]}
-        fileName={FILE}
-        hovered={hovered}
-        confirmed={confirmed}
-        onConfirmed={() => {}}
-      />
-
-      <div style={{ ...bar, marginTop: 16 }}>
-        {Object.keys(JOBS).map((k) => (
-          <button key={k} onClick={() => setJob(k)}>toast: {k}</button>
-        ))}
-      </div>
-      <div style={{ width: 340 }}>
-        <ToastView job={JOBS[job]} onDismiss={() => {}} onReveal={() => {}} onInstall={() => {}} />
-      </div>
+      {compare ? (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8 }}>
+          {RING_VARIANTS.map((v) => (
+            <section key={v.id} data-design={v.id} style={{ zoom: 0.8 }}>
+              <div style={{ marginBottom: 6, fontSize: 13, fontWeight: 600, color: theme === "dark" ? "#fff" : "#222" }}>{v.label}</div>
+              {show(v)}
+            </section>
+          ))}
+        </div>
+      ) : (
+        show(RING_VARIANTS.find((v) => v.id === design) ?? RING_VARIANTS[0])
+      )}
     </div>
   );
 }

@@ -45,17 +45,17 @@ const BY_FORMAT: Record<string, IconKind> = {
 
 export const iconKindFor = (formatId: string): IconKind => BY_FORMAT[formatId] ?? "doc";
 
-/** One muted color per kind of file. Used for the icon, the hover tint and the hover outline. */
+/** One muted color per kind of file, defined as --k-<kind> in theme.css (and per design). */
 export const PALETTE: Record<IconKind, string> = {
-  pdf: "#c26a52",
-  doc: "#4f7bb8",
-  text: "#7a8794",
-  code: "#bf8d3f",
-  markdown: "#7f6cb0",
-  image: "#4f9a80",
-  audio: "#b5658c",
-  video: "#3f98a8",
-  sheet: "#6b9a49",
-  slides: "#c47d4c",
-  book: "#6070b5",
+  pdf: "var(--k-pdf)",
+  doc: "var(--k-doc)",
+  text: "var(--k-text)",
+  code: "var(--k-code)",
+  markdown: "var(--k-markdown)",
+  image: "var(--k-image)",
+  audio: "var(--k-audio)",
+  video: "var(--k-video)",
+  sheet: "var(--k-sheet)",
+  slides: "var(--k-slides)",
+  book: "var(--k-book)",
 };

@@ -1,11 +1,14 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useEffect, useState } from "react";
+import { useDesign } from "../design/useDesign";
 import { ToastView } from "./ToastView";
+import "./ToastSkins.css";
 import type { JobUpdate } from "./types";
 
 export function Toast() {
   const [job, setJob] = useState<JobUpdate | null>(null);
+  useDesign();
 
   useEffect(() => {
     const unlisten = listen<JobUpdate>("job-update", (e) => setJob(e.payload));

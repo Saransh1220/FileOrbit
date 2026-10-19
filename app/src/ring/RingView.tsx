@@ -1,47 +1,14 @@
 import type { CSSProperties } from "react";
 import { HUB_RADIUS, RING_SIZE } from "./constants";
 import { FormatIcon } from "./FormatIcon";
-import { iconKindFor, PALETTE } from "./formatCategories";
 import { contentPoint, segmentPath } from "./geometry";
-import type { Wedge } from "./types";
+import { hubText, segmentVars, stateOf } from "./ringState";
+import type { RingViewProps } from "./ringViewProps";
 import "./Ring.css";
 
-export interface RingViewProps {
-  wedges: Wedge[];
-  fileName: string;
-  hovered: number | null;
-  confirmed: number | null;
-  /** Called when the chosen segment's confirmation animation has played. */
-  onConfirmed: () => void;
-}
+export type { RingViewProps } from "./ringViewProps";
 
-type SegmentState = "idle" | "hot" | "chosen" | "faded";
-
-function stateOf(i: number, hovered: number | null, confirmed: number | null): SegmentState {
-  if (confirmed !== null) return i === confirmed ? "chosen" : "faded";
-  return i === hovered ? "hot" : "idle";
-}
-
-interface HubText {
-  caption: string | null;
-  main: string;
-  kind: "name" | "label" | "note";
-}
-
-/** What the center disc says: the file, the hovered target, or a short status. */
-function hubText(p: RingViewProps): HubText {
-  if (p.wedges.length === 0) return { caption: null, main: "No conversions available", kind: "note" };
-  if (p.confirmed !== null) return { caption: null, main: "Converting\u2026", kind: "note" };
-  if (p.hovered !== null) return { caption: "Convert to", main: p.wedges[p.hovered].label, kind: "label" };
-  return { caption: null, main: p.fileName, kind: "name" };
-}
-
-/** Inline CSS variables carrying a segment's color identity and stagger order. */
-function segmentVars(id: string, i: number): CSSProperties {
-  return { "--c": PALETTE[iconKindFor(id)], "--i": i } as CSSProperties;
-}
-
-/** Presentational dial: all state comes from props so it can be previewed without Tauri. */
+/** The current dial design: flat segments in a donut around a label disc. */
 export function RingView(props: RingViewProps) {
   const { wedges, hovered, confirmed, onConfirmed } = props;
   const count = wedges.length;

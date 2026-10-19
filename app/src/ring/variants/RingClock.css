@@ -1,0 +1,161 @@
+/* Clock: warm paper, serif type, hairlines, one terracotta marker. Editorial and calm. */
+.clock {
+  position: relative;
+  font-family: "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+  --paper: oklch(0.965 0.016 85);
+  --rule: oklch(0.55 0.02 70);
+  --ink: oklch(0.27 0.02 60);
+  --ink-soft: oklch(0.5 0.02 65);
+  --mark: oklch(0.56 0.15 38);
+  --done: oklch(0.55 0.1 150);
+}
+
+.clock > svg {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+
+.clock .face {
+  fill: var(--paper);
+  stroke: var(--rule);
+  stroke-opacity: 0.45;
+  stroke-width: 1;
+  filter: drop-shadow(0 6px 18px oklch(0.3 0.03 60 / 0.22));
+  animation: clock-fade 320ms ease backwards;
+}
+
+.clock .rim {
+  fill: none;
+  stroke: var(--rule);
+  stroke-width: 1;
+}
+
+.clock .ticks {
+  fill: none;
+  stroke: var(--rule);
+  stroke-opacity: 0.7;
+  stroke-width: 1;
+  animation: clock-fade 500ms ease backwards;
+}
+
+.clock .marker {
+  fill: var(--mark);
+  stroke: var(--paper);
+  stroke-width: 2;
+}
+
+.clock .slot {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.clock .label {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  padding: 2px 0;
+  font-size: 12px;
+  font-style: italic;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+  border-bottom: 1.5px solid transparent;
+  transition:
+    transform 220ms cubic-bezier(0.2, 1.2, 0.3, 1.2),
+    color 140ms ease,
+    border-color 140ms ease,
+    opacity 180ms ease;
+  animation: clock-fade 340ms ease backwards;
+  animation-delay: calc(var(--i) * 40ms + 60ms);
+}
+
+.clock .label.hot {
+  transform: translate(-50%, -50%) scale(1.25);
+  font-weight: 700;
+  font-style: normal;
+  color: var(--mark);
+  border-bottom-color: var(--mark);
+}
+
+.clock .label.chosen {
+  color: var(--done);
+  font-weight: 700;
+  font-style: normal;
+  border-bottom-color: var(--done);
+  animation: clock-chosen 560ms ease forwards;
+}
+
+.clock .label.faded {
+  opacity: 0;
+}
+
+.clock .hub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 84px;
+  height: 84px;
+  box-sizing: border-box;
+  transform: translate(-50%, -50%);
+  padding: 0 6px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--ink);
+  background: transparent;
+  border: none;
+  pointer-events: none;
+  animation: clock-fade 260ms ease backwards;
+}
+
+.clock .hub .caption {
+  font-size: 10px;
+  font-style: italic;
+  color: var(--ink-soft);
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+.clock .hub .main {
+  max-width: 100%;
+  overflow: hidden;
+  line-height: 1.2;
+}
+
+.clock .hub.label .main {
+  font-size: 25px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: var(--mark);
+}
+
+.clock .hub.name .main,
+.clock .hub.note .main {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  font-size: 11px;
+  font-style: italic;
+  word-break: break-all;
+  color: var(--ink-soft);
+}
+
+@keyframes clock-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes clock-chosen {
+  0%,
+  65% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}

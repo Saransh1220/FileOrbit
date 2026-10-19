@@ -44,7 +44,9 @@ impl RingDropTarget {
             }
             None => (0.0, 0.0),
         };
-        eprintln!("[drop] {kind} at {x},{y}");
+        if kind != "over" {
+            eprintln!("[drop] {kind} at {x},{y}");
+        }
         let _ = self.app.emit_to(OVERLAY_LABEL, "ring-drag", RingDrag { kind, x, y });
     }
 }

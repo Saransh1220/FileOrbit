@@ -5,7 +5,7 @@ use tauri::{AppHandle, Emitter, LogicalPosition, Manager};
 
 pub const TOAST_LABEL: &str = "toast";
 /// Must match the toast window width in tauri.conf.json.
-const TOAST_WIDTH: f64 = 340.0;
+const TOAST_WIDTH: f64 = 420.0;
 const MARGIN: f64 = 16.0;
 const MENU_BAR: f64 = 36.0;
 

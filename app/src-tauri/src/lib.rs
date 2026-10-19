@@ -1,3 +1,4 @@
+mod design;
 pub mod engine;
 mod hook;
 mod overlay;
@@ -8,6 +9,7 @@ mod overlay_drop;
 #[cfg(target_os = "windows")]
 mod overlay_native;
 mod reveal;
+mod settings;
 mod status;
 mod toast;
 mod tray;
@@ -61,6 +63,7 @@ pub fn run() {
             hide_overlay,
             hide_toast,
             install_pack_for_job,
+            design::get_design,
             log_event,
             reveal_in_file_manager,
             start_conversion,
@@ -87,6 +90,7 @@ pub fn run() {
         .setup(|app| {
             #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+            app.manage(design::CurrentDesign::new(design::load(app.handle())));
             tray::build(app)?;
             engine::capabilities::warm_up();
             hook::start(app.handle().clone());

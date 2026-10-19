@@ -1,0 +1,197 @@
+/* Bold: solid color blocks, white icons, a dark hub. Flat, confident, high contrast. */
+.bold {
+  position: relative;
+  font-family: var(--font);
+  /* One saturated-but-flat color per file kind; same lightness so none shouts over another. */
+  --k-pdf: oklch(0.62 0.17 28);
+  --k-doc: oklch(0.58 0.16 255);
+  --k-text: oklch(0.55 0.04 250);
+  --k-code: oklch(0.66 0.14 75);
+  --k-markdown: oklch(0.56 0.17 295);
+  --k-image: oklch(0.6 0.13 165);
+  --k-audio: oklch(0.6 0.18 350);
+  --k-video: oklch(0.6 0.12 215);
+  --k-sheet: oklch(0.6 0.15 140);
+  --k-slides: oklch(0.65 0.16 52);
+  --k-book: oklch(0.55 0.16 275);
+}
+
+.bold > svg {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  filter: drop-shadow(0 3px 10px var(--ambient));
+}
+
+.bold .seg {
+  transform-box: view-box;
+  transform-origin: center;
+  transition:
+    transform 220ms cubic-bezier(0.2, 1.2, 0.3, 1.2),
+    opacity 180ms ease;
+  animation: bold-in 380ms cubic-bezier(0.2, 1, 0.3, 1.1) backwards;
+  animation-delay: calc(var(--i) * 34ms);
+}
+
+.bold .seg path {
+  fill: var(--c);
+  stroke: var(--c);
+  stroke-width: 14;
+  stroke-linejoin: round;
+  transition: opacity 180ms ease;
+}
+
+.bold.has-focus .seg.idle {
+  opacity: 0.5;
+}
+
+.bold .seg.hot {
+  transform: translate(var(--dx), var(--dy)) scale(1.04);
+}
+
+.bold .seg.chosen {
+  animation: bold-chosen 600ms cubic-bezier(0.2, 0.9, 0.3, 1.2) forwards;
+}
+
+.bold .seg.faded {
+  opacity: 0;
+}
+
+/* ---- icon + label ---- */
+.bold .slot {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.bold .content {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: #fff;
+  transition:
+    transform 220ms cubic-bezier(0.2, 1.2, 0.3, 1.2),
+    opacity 180ms ease;
+  animation: bold-fade 300ms ease backwards;
+  animation-delay: calc(var(--i) * 34ms + 90ms);
+}
+
+.bold .content svg {
+  width: 21px;
+  height: 21px;
+}
+
+.bold .ext {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1;
+}
+
+.bold.has-focus .content.idle {
+  opacity: 0.7;
+}
+
+.bold .content.hot {
+  transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.14);
+}
+
+.bold .content.chosen {
+  opacity: 0;
+  transition-delay: 400ms;
+}
+
+.bold .content.faded {
+  opacity: 0;
+}
+
+/* ---- hub: a dark disc; the hovered target's color rings it ---- */
+.bold .hub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 88px;
+  height: 88px;
+  box-sizing: border-box;
+  transform: translate(-50%, -50%);
+  padding: 0 8px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: oklch(0.24 0.012 265);
+  color: oklch(0.97 0.004 265);
+  box-shadow: 0 0 0 3px var(--surface);
+  pointer-events: none;
+  transition: box-shadow 180ms ease;
+  animation: bold-fade 260ms ease backwards;
+}
+
+.bold .hub.lit {
+  box-shadow: 0 0 0 3px var(--c);
+}
+
+.bold .hub .caption {
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.bold .hub .main {
+  max-width: 100%;
+  overflow: hidden;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.bold .hub.label .main {
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.bold .hub.name .main,
+.bold .hub.note .main {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  font-size: 10.5px;
+  word-break: break-all;
+  opacity: 0.85;
+}
+
+@keyframes bold-in {
+  from {
+    opacity: 0;
+    transform: rotate(-20deg) scale(0.7);
+  }
+}
+
+@keyframes bold-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes bold-chosen {
+  0% {
+    transform: translate(var(--dx), var(--dy)) scale(1.04);
+    opacity: 1;
+  }
+  30%,
+  70% {
+    transform: translate(var(--dx), var(--dy)) scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy)) scale(1.2);
+    opacity: 0;
+  }
+}

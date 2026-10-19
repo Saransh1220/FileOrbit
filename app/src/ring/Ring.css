@@ -9,7 +9,7 @@ body,
 
 .ring {
   position: relative;
-  font-family: -apple-system, "Segoe UI", sans-serif;
+  font-family: var(--font);
 }
 
 .ring > svg {
