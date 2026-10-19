@@ -27,7 +27,7 @@ const JOBS: Record<string, JobUpdate> = {
   running: { id: 1, name: "Patient Acknowledgement Screen.docx", target: "PDF", state: "running", output: null, error: null, ...blank },
   done: { id: 2, name: "Patient Acknowledgement Screen.docx", target: "PDF", state: "done", output: "/Users/me/Downloads/Patient Acknowledgement Screen.pdf", error: null, ...blank },
   "needs-pack": { id: 4, name: "report.docx", target: "PDF", state: "needs-pack", output: null, error: null, pack: "documents", pack_title: "Documents", engine: "LibreOffice", download_mb: 375, progress: null, message: null },
-  installing: { id: 5, name: "report.docx", target: "PDF", state: "installing", output: null, error: null, pack: "documents", pack_title: "Documents", engine: "LibreOffice", download_mb: null, progress: 42, message: "Downloading LibreOffice: 157 of 375 MB" },
+  installing: { id: 5, name: "report.docx", target: "PDF", state: "installing", output: null, error: null, pack: "documents", pack_title: "Documents", engine: "LibreOffice", download_mb: null, progress: 42, message: "Downloading LibreOffice: 157 of 375 MB · 1.4 MB/s · 3 min left" },
   unpacking: { id: 6, name: "report.docx", target: "PDF", state: "installing", output: null, error: null, pack: "documents", pack_title: "Documents", engine: "LibreOffice", download_mb: null, progress: null, message: "Unpacking LibreOffice, this can take a minute" },
   failed: { id: 3, name: "report.docx", target: "PDF", state: "failed", output: null, error: "no download is published for libreoffice on macos-aarch64 and none is installed on this machine", ...blank },
 };

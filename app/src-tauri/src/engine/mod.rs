@@ -3,6 +3,7 @@
 
 pub mod binaries;
 pub mod capabilities;
+pub mod download_text;
 pub mod engines;
 pub mod jobs;
 pub mod naming;

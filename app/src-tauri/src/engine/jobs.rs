@@ -6,11 +6,12 @@
 
 use super::binaries::{self, Tool};
 use super::pending::{PendingJob, PendingJobs};
-use super::{engines, naming, registry};
+use super::{download_text, engines, naming, registry};
 use radial_packs::installer::{Event, Installer};
 use serde::Serialize;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::time::{Duration, Instant};
 use tauri::{AppHandle, Manager};
 
 static NEXT_ID: AtomicU64 = AtomicU64::new(1);
@@ -102,19 +103,12 @@ pub struct Progress {
     pub message: String,
 }
 
-/// Whole megabytes, rounded to nearest, as shown to the user.
-fn mb(bytes: u64) -> u64 {
-    (bytes + 500_000) / 1_000_000
-}
-
-pub fn progress_of(event: &Event) -> Progress {
+/// `elapsed` is how long this engine's download has been running (for speed and time left).
+pub fn progress_of(event: &Event, elapsed: Duration) -> Progress {
     let (percent, message) = match event {
         Event::Downloading { engine, done, total } => (
             total.filter(|t| *t > 0).map(|t| ((done * 100) / t).min(100) as u8),
-            match total.filter(|t| *t > 0) {
-                Some(t) => format!("Downloading {engine}: {} of {} MB", mb(*done), mb(t)),
-                None => format!("Downloading {engine}: {} MB", mb(*done)),
-            },
+            download_text::downloading(engine, *done, *total, elapsed),
         ),
         Event::Verifying { engine } => (None, format!("Checking the {engine} download")),
         Event::Extracting { engine } => (None, format!("Unpacking {engine}, this can take a minute")),
@@ -178,7 +172,7 @@ fn run(app: AppHandle, id: u64, input: PathBuf, target_id: String) {
         update.pack_title = Some(missing.title);
         let (engine, bytes) = pack_needs(missing.pack);
         update.engine = Some(engine);
-        update.download_mb = bytes.map(mb);
+        update.download_mb = bytes.map(download_text::mb);
         crate::toast::publish(&app, &update);
         return;
     }
@@ -230,9 +224,18 @@ pub fn install_pack_for_job(app: AppHandle, id: u64) {
 
         // Only publish when the visible numbers change; downloads report every chunk.
         let mut last: Option<Progress> = None;
+        let mut started = Instant::now();
+        let mut downloading_engine = String::new();
         let result = Installer::for_this_machine().and_then(|installer| {
             installer.install(&[pending.pack.to_string()], &mut |event| {
-                let progress = progress_of(&event);
+                // Speed is per engine: restart the clock when a different one begins.
+                if let Event::Downloading { engine, .. } = &event {
+                    if *engine != downloading_engine {
+                        downloading_engine = engine.clone();
+                        started = Instant::now();
+                    }
+                }
+                let progress = progress_of(&event, started.elapsed());
                 if last.as_ref() != Some(&progress) {
                     crate::toast::publish(&app, &installing(Some(&progress)));
                     last = Some(progress);
@@ -289,24 +292,24 @@ mod tests {
 
     #[test]
     fn download_progress_is_a_percentage() {
-        let p = progress_of(&Event::Downloading { engine: "ffmpeg".into(), done: 25, total: Some(100) });
+        let p = progress_of(&Event::Downloading { engine: "ffmpeg".into(), done: 25, total: Some(100) }, Duration::ZERO);
         assert_eq!(p.percent, Some(25));
         assert_eq!(p.message, "Downloading ffmpeg: 0 of 0 MB");
-        let unknown = progress_of(&Event::Downloading { engine: "x".into(), done: 5, total: None });
+        let unknown = progress_of(&Event::Downloading { engine: "x".into(), done: 5, total: None }, Duration::ZERO);
         assert_eq!(unknown.percent, None);
-        let zero = progress_of(&Event::Downloading { engine: "x".into(), done: 0, total: Some(0) });
+        let zero = progress_of(&Event::Downloading { engine: "x".into(), done: 0, total: Some(0) }, Duration::ZERO);
         assert_eq!(zero.percent, None);
     }
 
     #[test]
     fn progress_never_exceeds_one_hundred() {
-        let p = progress_of(&Event::Downloading { engine: "x".into(), done: 150, total: Some(100) });
+        let p = progress_of(&Event::Downloading { engine: "x".into(), done: 150, total: Some(100) }, Duration::ZERO);
         assert_eq!(p.percent, Some(100));
     }
 
     #[test]
     fn later_phases_have_their_own_labels() {
-        assert_eq!(progress_of(&Event::Verifying { engine: "x".into() }).message, "Checking the x download");
-        assert!(progress_of(&Event::Extracting { engine: "x".into() }).message.starts_with("Unpacking x"));
+        assert_eq!(progress_of(&Event::Verifying { engine: "x".into() }, Duration::ZERO).message, "Checking the x download");
+        assert!(progress_of(&Event::Extracting { engine: "x".into() }, Duration::ZERO).message.starts_with("Unpacking x"));
     }
 }
