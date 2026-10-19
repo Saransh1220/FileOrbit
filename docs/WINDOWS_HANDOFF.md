@@ -37,6 +37,29 @@ Still to do for Windows: elevated Explorer windows (UIPI), multi-monitor and DPI
 5. Harden the Windows hook and overlay (see "Still to do" above).
 6. Then follow `docs/RELEASE.md`: mirror the engines, add signing secrets, tag, review the draft release, publish.
 
+## Remaining work (kept here so it survives a new context)
+
+Windows behaviour
+- [ ] Elevated Explorer windows: the hook cannot see them unless the app is elevated too (UIPI). Decide: document it, or offer an elevated mode.
+- [ ] Several monitors and mixed DPI: check ring placement, size and wedge hit-testing.
+- [ ] Keep the ring inside the screen edges (it can currently spill off).
+- [ ] Esc cancels the ring.
+- [ ] Desktop and Explorer tabs: only lightly tried; also try network folders and "Search results" views.
+- [ ] Download speed: resumable and parallel (range request) downloads; maybe a smaller audio-only ffmpeg. The wait is network-bound (measured 0.3 to 1.4 MB/s here), not our code.
+
+Tests and release
+- [ ] Windows versions of the `installer.rs` tests that are `#[cfg(unix)]` (fake engines are shell scripts).
+- [ ] Run `real_downloads` with `--ignored` for pandoc and LibreOffice on Windows (ffmpeg is done and works).
+- [ ] Try the Documents pack on Windows (LibreOffice `.msi` unpack is still unverified).
+- [ ] Add a `LICENSE`, replace the scaffold icons (`npm run tauri icon`).
+- [ ] First CI run on GitHub (`ci` workflow), then the release workflow by hand.
+- [ ] Run and fix `scripts/install.ps1`; build and try the NSIS installer.
+- [ ] Mirror the engine downloads (`docs/RELEASE.md`) before any release.
+- [ ] Windows code signing (optional, SmartScreen warning otherwise).
+
+Design
+- [ ] Refresh colours and styling (flat, minimal, muted; keep the donut dial). Preview in the browser at `#ring-demo`, never rebuild the app to iterate.
+
 ## Context worth keeping
 
 - The design is deliberately flat and minimal; preview UI changes in the browser (`npm run dev`, then `#ring-demo`) before rebuilding the app.
