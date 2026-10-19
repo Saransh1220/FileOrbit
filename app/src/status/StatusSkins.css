@@ -63,3 +63,55 @@
   font-weight: 600;
   color: oklch(0.3 0 0);
 }
+
+/* ---- Petals ---- */
+[data-design="petals"] .status {
+  padding: 14px 16px;
+  border-radius: 22px 22px 22px 8px;
+}
+
+/* ---- Compass: a graphite plate with an orange edge ---- */
+[data-design="compass"] .app {
+  font-family: "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+}
+
+[data-design="compass"] .app .status {
+  padding: 14px 16px 14px 20px;
+  border: 2px solid oklch(0.2 0.008 60);
+  border-radius: 10px;
+  color: oklch(0.93 0.025 85);
+  background: oklch(0.27 0.008 60);
+  box-shadow: inset 6px 0 0 oklch(0.72 0.17 52);
+}
+
+[data-design="compass"] .app .status.listening {
+  box-shadow: inset 6px 0 0 oklch(0.78 0.14 150);
+}
+
+[data-design="compass"] .app .status.permission-denied,
+[data-design="compass"] .app .status.error {
+  box-shadow: inset 6px 0 0 oklch(0.68 0.17 28);
+}
+
+/* ---- Fan: a card with a colored head ---- */
+[data-design="fan"] .app .status {
+  padding: 14px 16px;
+  border-radius: 10px;
+  border-top: 5px solid var(--accent);
+}
+
+[data-design="fan"] .app .status.listening {
+  border-top-color: var(--ok);
+}
+
+[data-design="fan"] .app .status.permission-denied,
+[data-design="fan"] .app .status.error {
+  border-top-color: var(--err);
+}
+
+/* ---- Hex ---- */
+[data-design="hex"] .app .status {
+  padding: 14px 16px;
+  border-radius: 6px;
+  border-width: 1.5px;
+}

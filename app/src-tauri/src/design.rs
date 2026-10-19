@@ -13,6 +13,10 @@ pub const DESIGNS: &[(&str, &str)] = &[
     ("current", "Current"),
     ("bold", "Bold"),
     ("brutal", "Brutal"),
+    ("petals", "Petals"),
+    ("compass", "Compass"),
+    ("fan", "Fan"),
+    ("hex", "Hex"),
 ];
 
 pub fn is_known(id: &str) -> bool {

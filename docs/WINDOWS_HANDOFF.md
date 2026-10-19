@@ -58,7 +58,7 @@ Tests and release
 - [ ] Windows code signing (optional, SmartScreen warning otherwise).
 
 Design
-- [x] Themes: Current, Bold and Brutal, chosen from the tray icon menu under Theme (saved in `settings.json`, applied live to the ring, toast and status window). Add a design by adding a dial in `app/src/ring/variants/`, a registry line in `ringVariants.ts`, toast and status skins in `ToastSkins.css` / `StatusSkins.css`, and an entry in `app/src-tauri/src/design.rs` (a test checks the two lists match).
+- [x] Themes: Current, Bold, Brutal, Petals, Compass, Fan and Hex, chosen from the tray icon menu under Theme (saved in `settings.json`, applied live to the ring, toast and status window). Add a design by adding a dial in `app/src/ring/variants/`, a registry line in `ringVariants.ts`, toast and status skins in `ToastSkins.css` / `StatusSkins.css`, and an entry in `app/src-tauri/src/design.rs` (a test checks the two lists match).
 - [ ] More design options were requested after Bold and Brutal. Five earlier designs (Orbit, Blueprint, Halo, Chips, Clock) are kept in git under the tag `designs-archive-8`.
 - [ ] Check every theme on macOS (the UI is shared, but only Windows has been run).
 

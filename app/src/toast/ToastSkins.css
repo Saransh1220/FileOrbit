@@ -146,3 +146,148 @@
 [data-design="brutal"] .toast .bar i {
   background: oklch(0.15 0 0);
 }
+
+/* ---- Petals: a soft rounded card with a leaf-tinted icon ---- */
+[data-design="petals"] .toast {
+  height: 54px;
+  border-radius: 22px 22px 22px 8px;
+  box-shadow: 0 6px 18px var(--ambient);
+}
+
+[data-design="petals"] .toast .icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50% 50% 50% 8px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface));
+}
+
+[data-design="petals"] .toast.done .icon {
+  color: var(--ok);
+  background: color-mix(in srgb, var(--ok) 20%, var(--surface));
+}
+
+[data-design="petals"] .toast.failed .icon {
+  color: var(--err);
+  background: color-mix(in srgb, var(--err) 20%, var(--surface));
+}
+
+[data-design="petals"] .toast button {
+  border-radius: 999px;
+}
+
+[data-design="petals"] .toast .bar {
+  height: 4px;
+}
+
+/* ---- Compass: a warm graphite plate with an orange action ---- */
+[data-design="compass"] .toast {
+  height: 54px;
+  border-radius: 10px;
+  color: oklch(0.93 0.025 85);
+  background: oklch(0.27 0.008 60);
+  border: 2px solid oklch(0.2 0.008 60);
+  box-shadow: 0 6px 16px oklch(0.15 0.01 60 / 0.35);
+  font-family: "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+}
+
+[data-design="compass"] .toast .icon {
+  width: 26px;
+  height: 26px;
+  color: oklch(0.2 0.008 60);
+  background: oklch(0.72 0.17 52);
+}
+
+[data-design="compass"] .toast.done .icon {
+  background: oklch(0.78 0.14 150);
+}
+
+[data-design="compass"] .toast.failed .icon {
+  background: oklch(0.68 0.17 28);
+}
+
+[data-design="compass"] .toast .title {
+  letter-spacing: 0.02em;
+}
+
+[data-design="compass"] .toast .detail {
+  color: oklch(0.66 0.02 75);
+}
+
+[data-design="compass"] .toast button {
+  border: 1px solid oklch(0.45 0.015 70);
+  color: oklch(0.93 0.025 85);
+  background: transparent;
+}
+
+[data-design="compass"] .toast button:hover {
+  background: oklch(0.72 0.17 52 / 0.15);
+}
+
+[data-design="compass"] .toast button.primary {
+  border-color: transparent;
+  color: oklch(0.2 0.008 60);
+  background: oklch(0.72 0.17 52);
+}
+
+[data-design="compass"] .toast button.ghost {
+  border-color: transparent;
+  color: oklch(0.66 0.02 75);
+}
+
+[data-design="compass"] .toast .spinner {
+  border-color: oklch(0.72 0.17 52 / 0.25);
+  border-top-color: oklch(0.72 0.17 52);
+}
+
+[data-design="compass"] .toast .bar {
+  height: 3px;
+  background: oklch(0.72 0.17 52 / 0.2);
+}
+
+[data-design="compass"] .toast .bar i {
+  background: oklch(0.72 0.17 52);
+}
+
+/* ---- Fan: a card with a colored head ---- */
+[data-design="fan"] .toast {
+  height: 56px;
+  border-radius: 10px;
+  border-top: 5px solid var(--accent);
+  box-shadow: 0 4px 12px var(--ambient);
+}
+
+[data-design="fan"] .toast.done {
+  border-top-color: var(--ok);
+}
+
+[data-design="fan"] .toast.failed {
+  border-top-color: var(--err);
+}
+
+[data-design="fan"] .toast .icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+}
+
+[data-design="fan"] .toast button {
+  border-radius: 6px;
+}
+
+/* ---- Hex: crisp, hexagon-cut icon, sharp corners ---- */
+[data-design="hex"] .toast {
+  border-radius: 6px;
+  border-width: 1.5px;
+}
+
+[data-design="hex"] .toast .icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 0;
+  clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%);
+}
+
+[data-design="hex"] .toast button {
+  border-radius: 4px;
+}

@@ -26,3 +26,22 @@ export function sectorPath(index: number, count: number, rIn: number, rOut: numb
     "Z",
   ].join(" ");
 }
+
+/** One path of small radial ticks around a circle: `count` ticks, every `major`th one longer. */
+export function tickRing(radius: number, count: number, major: number, minorLen: number, majorLen: number): string {
+  const parts: string[] = [];
+  for (let i = 0; i < count; i++) {
+    const a = (i * Math.PI * 2) / count - Math.PI / 2;
+    const len = i % major === 0 ? majorLen : minorLen;
+    parts.push(`M ${pt(radius, a)} L ${pt(radius + len, a)}`);
+  }
+  return parts.join(" ");
+}
+
+/** Corner points of a flat-topped hexagon centered on (cx, cy), as an SVG `points` value. */
+export function hexPoints(cx: number, cy: number, radius: number): string {
+  return Array.from({ length: 6 }, (_, k) => {
+    const a = (k * Math.PI) / 3;
+    return `${fmt(cx + radius * Math.cos(a))},${fmt(cy + radius * Math.sin(a))}`;
+  }).join(" ");
+}
