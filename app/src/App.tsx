@@ -2,18 +2,8 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useEffect, useState } from "react";
 import { useDesign } from "./design/useDesign";
-import "./App.css";
-
-type HookStatus = "starting" | "listening" | "permission-denied" | "unsupported" | "error";
-
-const STATUS_TEXT: Record<HookStatus, string> = {
-  starting: "Starting…",
-  listening: "Listening. Hold Shift and drag a file from Finder or Explorer.",
-  "permission-denied":
-    "Input Monitoring permission needed: System Settings → Privacy & Security → Input Monitoring, enable this app (or your terminal in dev), then restart.",
-  unsupported: "Shift+drag detection is not available on this OS yet.",
-  error: "Could not start the listener.",
-};
+import type { HookStatus } from "./status/hookStatus";
+import { StatusView } from "./status/StatusView";
 
 function App() {
   const [status, setStatus] = useState<HookStatus>("starting");
@@ -28,12 +18,7 @@ function App() {
     };
   }, []);
 
-  return (
-    <main className="app">
-      <h1>Radial Convert</h1>
-      <p className={`status ${status}`}>{STATUS_TEXT[status]}</p>
-    </main>
-  );
+  return <StatusView status={status} />;
 }
 
 export default App;

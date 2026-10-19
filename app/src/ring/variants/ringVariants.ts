@@ -1,13 +1,8 @@
 import type { ComponentType } from "react";
 import { RingView } from "../RingView";
 import type { RingViewProps } from "../ringViewProps";
-import { RingBlueprint } from "./RingBlueprint";
 import { RingBold } from "./RingBold";
 import { RingBrutal } from "./RingBrutal";
-import { RingChips } from "./RingChips";
-import { RingClock } from "./RingClock";
-import { RingHalo } from "./RingHalo";
-import { RingOrbit } from "./RingOrbit";
 
 export interface RingVariant {
   id: string;
@@ -18,12 +13,7 @@ export interface RingVariant {
 /** Every dial design the playground can show. The real overlay uses `Ring.tsx`. */
 export const RING_VARIANTS: RingVariant[] = [
   { id: "current", label: "Current", View: RingView },
-  { id: "orbit", label: "Orbit", View: RingOrbit },
   { id: "bold", label: "Bold", View: RingBold },
-  { id: "blueprint", label: "Blueprint", View: RingBlueprint },
-  { id: "halo", label: "Halo", View: RingHalo },
-  { id: "chips", label: "Chips", View: RingChips },
-  { id: "clock", label: "Clock", View: RingClock },
   { id: "brutal", label: "Brutal", View: RingBrutal },
 ];
 

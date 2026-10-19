@@ -58,6 +58,7 @@ fn reveal_in_file_manager(path: String) {
 pub fn run() {
     tauri::Builder::default()
         .manage(status::HookStatus::default())
+        .manage(design::CurrentDesign::default())
         .manage(engine::pending::PendingJobs::default())
         .invoke_handler(tauri::generate_handler![
             hide_overlay,
@@ -90,7 +91,7 @@ pub fn run() {
         .setup(|app| {
             #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
-            app.manage(design::CurrentDesign::new(design::load(app.handle())));
+            design::restore(app.handle());
             tray::build(app)?;
             engine::capabilities::warm_up();
             hook::start(app.handle().clone());

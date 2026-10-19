@@ -11,12 +11,7 @@ pub const DEFAULT: &str = "current";
 /// `src/ring/variants/ringVariants.ts` (a test below checks that).
 pub const DESIGNS: &[(&str, &str)] = &[
     ("current", "Current"),
-    ("orbit", "Orbit"),
     ("bold", "Bold"),
-    ("blueprint", "Blueprint"),
-    ("halo", "Halo"),
-    ("chips", "Chips"),
-    ("clock", "Clock"),
     ("brutal", "Brutal"),
 ];
 
@@ -25,17 +20,28 @@ pub fn is_known(id: &str) -> bool {
 }
 
 /// The active design id, shared with the windows through `get_design`.
+///
+/// It is registered with the builder, before any window exists: Tauri creates
+/// the windows before `setup` runs, and a fast one may ask for the design first.
+/// `restore` then swaps in the saved choice.
 pub struct CurrentDesign(Mutex<String>);
 
-impl CurrentDesign {
-    pub fn new(id: String) -> Self {
-        Self(Mutex::new(id))
+impl Default for CurrentDesign {
+    fn default() -> Self {
+        Self(Mutex::new(DEFAULT.to_string()))
     }
 }
 
 /// The saved design, or the default when none is saved or the saved one no longer exists.
-pub fn load(app: &AppHandle) -> String {
+fn load(app: &AppHandle) -> String {
     settings::read_design(app).filter(|id| is_known(id)).unwrap_or_else(|| DEFAULT.to_string())
+}
+
+/// Applies the saved design at startup and tells any window that already asked.
+pub fn restore(app: &AppHandle) {
+    let saved = load(app);
+    *app.state::<CurrentDesign>().0.lock().unwrap() = saved.clone();
+    let _ = app.emit("design-changed", saved);
 }
 
 pub fn current(app: &AppHandle) -> String {

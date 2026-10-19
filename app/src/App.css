@@ -24,3 +24,9 @@
 .status.error {
   border-color: var(--err);
 }
+
+.app .hint {
+  margin: 12px 2px 0;
+  font-size: 12px;
+  color: var(--fg-muted);
+}
