@@ -5,6 +5,7 @@
 //! installed the same job carries on.
 
 use super::batch::{self, Outcome, Summary};
+use super::selection;
 use super::binaries::{self, Tool};
 use super::pending::{PendingJob, PendingJobs};
 use super::{download_text, engines, naming, registry};
@@ -184,7 +185,32 @@ fn job_base(id: u64, inputs: &[PathBuf], target_id: &str) -> JobUpdate {
 
 /// The first pack any of the files needs and does not have yet.
 fn first_missing_pack(inputs: &[PathBuf], target_id: &str) -> Option<MissingPack> {
+    if target_id == selection::MERGE {
+        // Merging (and combining pictures) is done by the PDF library, whatever the inputs are.
+        return binaries::find(Tool::Pdfium).is_err().then(|| MissingPack {
+            pack: "pdf",
+            title: radial_packs::catalog::pack("pdf").map(|p| p.title).unwrap_or("PDF tools").to_string(),
+        });
+    }
     inputs.iter().find_map(|input| missing_pack(input, target_id, &binaries::find))
+}
+
+/// Merges the files into one PDF next to the first of them, named "<first> (merged).pdf".
+/// Returns the new file and how many pages it has. Leaves nothing behind if it fails.
+pub fn merge_files(inputs: &[PathBuf]) -> Result<(PathBuf, u32), String> {
+    let first = inputs.first().ok_or_else(|| "there is nothing to merge".to_string())?;
+    if let Some(missing) = inputs.iter().find(|p| !p.is_file()) {
+        return Err(format!("{} no longer exists", missing.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default()));
+    }
+    let library = super::pdf::Library::load()?;
+    let output = naming::reserve_with_suffix(first, " (merged)", "pdf")?;
+    match super::pdf::merge::merge(library, inputs, &output) {
+        Ok(merged) => Ok((output, merged.pages)),
+        Err(message) => {
+            let _ = std::fs::remove_file(&output);
+            Err(message)
+        }
+    }
 }
 
 fn run(app: AppHandle, id: u64, inputs: Vec<PathBuf>, target_id: String) {
@@ -206,8 +232,35 @@ fn run(app: AppHandle, id: u64, inputs: Vec<PathBuf>, target_id: String) {
     std::thread::spawn(move || finish(&app, &base, &inputs, &target_id));
 }
 
+/// Publishes how a merge ended.
+fn finish_merge(app: &AppHandle, base: &JobUpdate, inputs: &[PathBuf]) {
+    let mut running = base.with(JobState::Running);
+    running.message = Some(format!("Putting {} files into one PDF", inputs.len()));
+    crate::toast::publish(app, &running);
+
+    let update = match merge_files(inputs) {
+        Ok((output, pages)) => {
+            let mut done = base.with(JobState::Done);
+            done.output = Some(output.to_string_lossy().into_owned());
+            done.count = 1;
+            done.message = Some(format!("{} files, {} pages", inputs.len(), pages));
+            done
+        }
+        Err(message) => {
+            eprintln!("[job {}] merge failed: {message}", base.id);
+            let mut failed = base.with(JobState::Failed);
+            failed.error = Some(message);
+            failed
+        }
+    };
+    crate::toast::publish(app, &update);
+}
+
 /// Converts the files one after another and publishes how the job ended.
 fn finish(app: &AppHandle, base: &JobUpdate, inputs: &[PathBuf], target_id: &str) {
+    if target_id == selection::MERGE {
+        return finish_merge(app, base, inputs);
+    }
     let mut outcome = Outcome::default();
     for (index, input) in inputs.iter().enumerate() {
         if inputs.len() > 1 {

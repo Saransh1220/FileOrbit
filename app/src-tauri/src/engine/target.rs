@@ -18,4 +18,6 @@ pub struct Target {
     /// Output extension, also the wedge id ("pdf", "mp3", ...).
     pub id: String,
     pub label: String,
+    /// True for an action that works on the whole selection (Merge), not a format to convert to.
+    pub tool: bool,
 }

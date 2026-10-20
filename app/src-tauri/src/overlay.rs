@@ -1,6 +1,6 @@
 //! The transparent ring window that follows the cursor during a drag.
 
-use crate::engine::{capabilities, registry};
+use crate::engine::{capabilities, selection};
 use crate::engine::target::Target;
 use serde::Serialize;
 use std::path::PathBuf;
@@ -18,18 +18,17 @@ struct RingOpened {
     paths: Vec<String>,
 }
 
-/// Wedges for the first dragged file; the ring converts each dropped file
-/// by its own type, so mixed drops only show the first file's options.
+/// Whether the dragged files get a ring at all: false when nothing can be done with
+/// them, so a drag of something unsupported shows no ring instead of an empty one.
+pub fn wants_ring(paths: &[PathBuf]) -> bool {
+    !selection::ring_targets(paths, capabilities::is_supported).is_empty()
+}
+
+/// Wedges for everything dragged: what all the files share, plus Merge when they can
+/// become one PDF (see `engine::selection`).
 fn ring_payload(paths: &[PathBuf]) -> RingOpened {
-    let first = paths.first();
-    let targets = first
-        .and_then(|p| registry::normalized_ext(p))
-        .map(|ext| registry::targets_for_filtered(&ext, capabilities::is_supported))
-        .unwrap_or_default();
-    let name = first
-        .and_then(|p| p.file_name())
-        .map(|n| n.to_string_lossy().into_owned())
-        .unwrap_or_default();
+    let targets = selection::ring_targets(paths, capabilities::is_supported);
+    let name = selection::selection_name(paths);
     eprintln!("[overlay] paths={paths:?} -> {} targets", targets.len());
     let paths = paths.iter().map(|p| p.to_string_lossy().into_owned()).collect();
     RingOpened { name, targets, paths }

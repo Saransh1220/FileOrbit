@@ -1,6 +1,8 @@
 export interface Wedge {
   id: string;
   label: string;
+  /** An action on the whole selection (Merge), not a format to convert to. */
+  tool?: boolean;
 }
 
 export interface Point {

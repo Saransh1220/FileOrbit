@@ -24,10 +24,13 @@ function icon(job: JobUpdate) {
   }
 }
 
+/** Merge and Combine make one PDF from several files, rather than converting each. */
+const isMerge = (job: JobUpdate) => job.target === "MERGE";
+
 function title(job: JobUpdate) {
   switch (job.state) {
     case "running":
-      return `Converting to ${job.target}…`;
+      return isMerge(job) ? "Making one PDF…" : `Converting to ${job.target}…`;
     case "done":
       return job.count > 1 ? `Converted ${job.count} files` : `Saved ${fileName(job.output ?? "")}`;
     case "needs-pack":
@@ -35,7 +38,7 @@ function title(job: JobUpdate) {
     case "installing":
       return `Installing ${job.engine ?? "converter"} for ${job.pack_title}…`;
     default:
-      return `Couldn’t convert to ${job.target}`;
+      return isMerge(job) ? "Couldn’t make the PDF" : `Couldn’t convert to ${job.target}`;
   }
 }
 
@@ -45,6 +48,7 @@ function needsPackDetail(job: JobUpdate) {
 }
 
 function doneDetail(job: JobUpdate) {
+  if (job.message) return job.message;
   if (job.count <= 1 && job.failed === 0) return job.name;
   const failed = job.failed > 0 ? ` · ${job.failed} could not be converted` : "";
   return `Next to the originals${failed}`;

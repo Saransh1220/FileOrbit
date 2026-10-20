@@ -55,6 +55,13 @@ const PATHS: Record<IconKind, ReactNode> = {
       <path d="M8 20h8 M12 16v4" />
     </>
   ),
+  merge: (
+    <>
+      <rect x="3" y="3.5" width="10" height="13" rx="2" />
+      <path d="M8 7.5h0 M16 7.5h2.5a2 2 0 0 1 2 2V19a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-2.5" />
+      <path d="M8 9.5v4 M6 11.5h4" />
+    </>
+  ),
   book: (
     <>
       <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H19v15H6.5A2.5 2.5 0 0 0 4 20.5z" />

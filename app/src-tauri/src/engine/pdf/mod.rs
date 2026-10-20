@@ -2,6 +2,7 @@
 //! "PDF tools" pack. Everything here is about documents; the conversion
 //! pipeline's entry points live in `engines/pdfium.rs`.
 
+pub mod merge;
 pub mod pictures;
 pub mod render;
 pub mod text;

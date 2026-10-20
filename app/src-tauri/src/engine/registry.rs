@@ -161,6 +161,7 @@ pub fn targets_for_filtered(ext: &str, supported: impl Fn(Engine, &str) -> bool)
         .map(|(id, _)| Target {
             id: (*id).to_string(),
             label: id.to_ascii_uppercase(),
+            tool: false,
         })
         .collect()
 }

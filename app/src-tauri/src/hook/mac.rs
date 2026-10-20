@@ -66,7 +66,8 @@ fn run(app: AppHandle) {
                     t.button_dragged(loc.x, loc.y, shift, || {
                         *files = drag_pasteboard_files();
                         eprintln!("[hook] shift-drag, files on pasteboard: {}", files.len());
-                        !files.is_empty()
+                        // No ring at all when nothing can be done with these files.
+                        overlay::wants_ring(&files[..])
                     })
                 }
                 CGEventType::LeftMouseUp => {

@@ -155,6 +155,22 @@ Also built: several dropped files are one job (one toast: "File 2 of 5", then "C
 
 Not yet: the ring does not offer an "Organize" wedge; multi-file selections still use the first file's type; page-by-page progress inside one large PDF; combining several pictures into one PDF (phase 2).
 
+## 5d. Phase 2 result (2026-10-21)
+
+Built and tested (79 unit tests plus a real-PDF suite that merges, reorders, mixes pictures and fails safely):
+
+| Selection | Ring shows |
+|---|---|
+| One file | Its own conversions (unchanged) |
+| Several PDFs | **Merge**, then the conversions they share (PNG, JPG, TXT, DOCX, ODT) |
+| Several pictures | **Combine**, then what they share (including PDF per picture) |
+| PDFs and pictures together | **Merge**, then what both can do (JPG) |
+| Files with nothing in common (PDF and a video, say), unknown types, files without an extension | **No ring at all** (this also applies to a single unsupported file, which used to show an empty ring) |
+
+Merge writes `<first file> (merged).pdf` next to the first file (then `(merged) (1)`), in the order Explorer or Finder gives the files, never touches the originals, fails by naming the damaged file, and leaves no half-written result. The toast says "Making one PDF" and then shows the file name and "3 files, 12 pages".
+
+Not yet: reordering files before merging (phase 4); the "Organize" wedge and the page editor (phase 3); the Mac ring edit compiles only on a Mac (CI checks it).
+
 ## 6. Delivery in phases
 
 | Phase | What ships | Checkpoint |

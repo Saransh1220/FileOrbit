@@ -12,4 +12,5 @@ pub mod pdf;
 pub mod pending;
 pub mod process;
 pub mod registry;
+pub mod selection;
 pub mod target;

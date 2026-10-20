@@ -46,12 +46,13 @@ fn worker(app: AppHandle, rx: mpsc::Receiver<MouseEvent>) {
             MouseEvent::Move { x, y, shift } => trigger.button_dragged(x as f64, y as f64, shift, || {
                 // Probe once per press: a negative answer is final for this drag.
                 if probed {
-                    return !files.is_empty();
+                    return overlay::wants_ring(&files);
                 }
                 probed = true;
                 files = explorer::selected_files_at(press.0, press.1);
                 eprintln!("[hook] shift-drag, files selected in Explorer: {}", files.len());
-                !files.is_empty()
+                // No ring at all when nothing can be done with these files.
+                overlay::wants_ring(&files)
             }),
             MouseEvent::Cancel => {
                 if trigger.cancel() {

@@ -17,11 +17,17 @@ pub fn page_size(width_px: u32, height_px: u32) -> (f32, f32) {
 
 /// Writes a one-page PDF holding the picture at `image_path`.
 pub fn picture_to_pdf(library: &Library, image_path: &Path, output: &Path) -> Result<(), String> {
+    let mut document = library.create()?;
+    append_picture(&mut document, image_path)?;
+    document.save_to_file(output).map_err(|e| format!("cannot write the PDF: {e}"))
+}
+
+/// Adds the picture at `image_path` to the end of `document` as one page of its own shape.
+pub fn append_picture(document: &mut PdfDocument<'_>, image_path: &Path) -> Result<(), String> {
     let name = image_path.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
     let picture = image::open(image_path).map_err(|e| format!("cannot read the picture {name}: {e}"))?;
     let (width, height) = page_size(picture.width(), picture.height());
 
-    let mut document = library.create()?;
     let mut page = document
         .pages_mut()
         .create_page_at_end(PdfPagePaperSize::Custom(PdfPoints::new(width), PdfPoints::new(height)))
@@ -29,7 +35,7 @@ pub fn picture_to_pdf(library: &Library, image_path: &Path, output: &Path) -> Re
     page.objects_mut()
         .create_image_object(PdfPoints::ZERO, PdfPoints::ZERO, &picture, Some(PdfPoints::new(width)), Some(PdfPoints::new(height)))
         .map_err(|e| format!("cannot place the picture on the page: {e}"))?;
-    document.save_to_file(output).map_err(|e| format!("cannot write the PDF: {e}"))
+    Ok(())
 }
 
 #[cfg(test)]

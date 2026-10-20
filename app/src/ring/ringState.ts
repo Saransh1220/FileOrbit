@@ -19,7 +19,10 @@ export interface HubText {
 export function hubText(p: RingViewProps): HubText {
   if (p.wedges.length === 0) return { caption: null, main: "No conversions available", kind: "note" };
   if (p.confirmed !== null) return { caption: null, main: "Converting\u2026", kind: "note" };
-  if (p.hovered !== null) return { caption: "Convert to", main: p.wedges[p.hovered].label, kind: "label" };
+  if (p.hovered !== null) {
+    const wedge = p.wedges[p.hovered];
+    return { caption: wedge.tool ? "Into one PDF" : "Convert to", main: wedge.label, kind: "label" };
+  }
   return { caption: null, main: p.fileName, kind: "name" };
 }
 

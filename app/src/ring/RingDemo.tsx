@@ -12,6 +12,9 @@ const SETS: Record<string, Wedge[]> = {
   audio: toWedges(["mp3", "wav", "flac", "aac", "m4a"]),
   image: toWedges(["png", "jpg", "webp", "tiff", "bmp", "gif"]),
   video: toWedges(["mp4", "mkv", "webm", "gif", "mp3", "wav"]),
+  // Several selected files: a tool wedge first (Merge or Combine), then what they share.
+  pdfs: [{ id: "merge", label: "MERGE", tool: true }, ...toWedges(["png", "jpg", "txt", "docx", "odt"])],
+  pictures: [{ id: "merge", label: "COMBINE", tool: true }, ...toWedges(["jpg", "webp", "tiff", "bmp", "gif", "pdf"])],
   mixed: toWedges(["pdf", "docx", "html", "md", "png", "mp3", "mp4", "xlsx"]),
   none: [],
 };

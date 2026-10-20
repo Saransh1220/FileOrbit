@@ -20,11 +20,17 @@ fn candidate_name(stem: &str, ext: &str, attempt: u32) -> String {
 /// existing file is never overwritten. The engine then fills the file in; if
 /// the conversion fails, the caller must delete the reserved file.
 pub fn reserve_output_path(source: &Path, ext: &str) -> Result<PathBuf, String> {
+    reserve_with_suffix(source, "", ext)
+}
+
+/// Like `reserve_output_path`, with `suffix` added to the source's name first:
+/// `report.pdf` + " (merged)" gives `report (merged).pdf`, then `report (merged) (1).pdf`.
+pub fn reserve_with_suffix(source: &Path, suffix: &str, ext: &str) -> Result<PathBuf, String> {
     let dir = source.parent().unwrap_or_else(|| Path::new("."));
-    let stem = source
-        .file_stem()
-        .map(|s| s.to_string_lossy().into_owned())
-        .unwrap_or_default();
+    let stem = format!(
+        "{}{suffix}",
+        source.file_stem().map(|s| s.to_string_lossy().into_owned()).unwrap_or_default()
+    );
 
     for attempt in 0..MAX_ATTEMPTS {
         let candidate = dir.join(candidate_name(&stem, ext, attempt));
@@ -64,6 +70,16 @@ mod tests {
         assert_eq!(first, dir.join("report.pdf"));
         assert_eq!(second, dir.join("report (1).pdf"));
         assert_eq!(third, dir.join("report (2).pdf"));
+    }
+
+    #[test]
+    fn a_suffix_goes_after_the_name_and_is_still_numbered() {
+        let dir = scratch("suffix");
+        let source = dir.join("contract.pdf");
+        let first = reserve_with_suffix(&source, " (merged)", "pdf").unwrap();
+        let second = reserve_with_suffix(&source, " (merged)", "pdf").unwrap();
+        assert_eq!(first, dir.join("contract (merged).pdf"));
+        assert_eq!(second, dir.join("contract (merged) (1).pdf"));
     }
 
     #[test]

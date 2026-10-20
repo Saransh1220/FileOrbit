@@ -9,7 +9,8 @@ export type IconKind =
   | "video"
   | "sheet"
   | "slides"
-  | "book";
+  | "book"
+  | "merge";
 
 const BY_FORMAT: Record<string, IconKind> = {
   pdf: "pdf",
@@ -41,6 +42,8 @@ const BY_FORMAT: Record<string, IconKind> = {
   pptx: "slides",
   odp: "slides",
   epub: "book",
+  // Actions that work on the whole selection, not formats.
+  merge: "merge",
 };
 
 export const iconKindFor = (formatId: string): IconKind => BY_FORMAT[formatId] ?? "doc";
@@ -58,4 +61,6 @@ export const PALETTE: Record<IconKind, string> = {
   sheet: "var(--k-sheet)",
   slides: "var(--k-slides)",
   book: "var(--k-book)",
+  // Merging builds a PDF, so it wears the PDF color in every theme.
+  merge: "var(--k-pdf)",
 };
