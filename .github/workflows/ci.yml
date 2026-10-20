@@ -61,5 +61,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      # The failing tests are also written to the run's annotations, which anyone can read
+      # (the full log needs a GitHub login).
       - name: Test the install and mirror scripts
-        run: python -m unittest discover -s scripts -p "test_*.py"
+        shell: bash
+        run: |
+          python -m unittest discover -s scripts -p "test_*.py" 2>&1 | tee test-output.txt
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ]; then
+            echo "::error title=Script tests failed::$(grep -E '^(ERROR|FAIL):|Error|Exception|assert' test-output.txt | head -25 | tr '\n' ' ' | cut -c1-1800)"
+          fi
+          exit "$status"
