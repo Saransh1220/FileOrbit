@@ -48,6 +48,10 @@ Windows behaviour
 - [ ] Download speed: resumable and parallel (range request) downloads; maybe a smaller audio-only ffmpeg. The wait is network-bound (measured 0.3 to 1.4 MB/s here), not our code.
 
 Tests and release
+- [ ] **Data folder shares the installer's folder (Windows).** The NSIS installer puts the app in `%LOCALAPPDATA%\Radial Convert`, which is also where converters, downloads and `installed.json` live. Reinstalling or uninstalling the app can disturb user data. Move the data to its own folder (for example `%LOCALAPPDATA%\Radial Convert Data`), make the paths saved in `installed.json` relative so the folder can move, and migrate what is already there.
+- [ ] The first LibreOffice conversion still takes about 12 s (it builds the settings profile once; later ones take about 5 s). Could warm it up right after installing the Documents pack.
+- [ ] An in-app LibreOffice install once left `installed.json` empty although the files were on disk (seen once, not reproduced; the same install from the command line saved correctly). If it happens again, check `installed.json` first.
+
 - [ ] Windows versions of the `installer.rs` tests that are `#[cfg(unix)]` (fake engines are shell scripts).
 - [ ] Run `real_downloads` with `--ignored` for pandoc and LibreOffice on Windows (ffmpeg is done and works).
 - [ ] Try the Documents pack on Windows (LibreOffice `.msi` unpack is still unverified).
