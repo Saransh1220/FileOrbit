@@ -24,6 +24,7 @@ import json
 import shutil
 import subprocess
 import sys
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -48,10 +49,19 @@ def sha256_of(path: Path) -> str:
     return digest.hexdigest()
 
 
+def open_source(url: str):
+    """Opens a download address. A file:// address is read from disk directly: urllib's own
+    handling of a query string on one (as in ...?download=1) differs between Python versions."""
+    parts = urllib.parse.urlparse(url)
+    if parts.scheme == "file":
+        return open(urllib.request.url2pathname(parts.path), "rb")
+    return urllib.request.urlopen(url)
+
+
 def download(url: str, dest: Path) -> None:
     dest.parent.mkdir(parents=True, exist_ok=True)
     part = dest.with_suffix(dest.suffix + ".part")
-    with urllib.request.urlopen(url) as response, part.open("wb") as out:
+    with open_source(url) as response, part.open("wb") as out:
         shutil.copyfileobj(response, out, CHUNK)
     part.replace(dest)
 
