@@ -12,7 +12,9 @@ edition = "2024"
 # to make the lib name unique and wouldn't conflict with the bin name.
 # This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
 name = "app_lib"
-crate-type = ["staticlib", "cdylib", "rlib"]
+# Desktop only: the mobile-only staticlib and cdylib outputs were each rebuilt (and kept, at
+# gigabytes of debug info) for nothing. Add them back if a mobile target is ever built.
+crate-type = ["rlib"]
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
@@ -29,6 +31,15 @@ pdfium-render = "0.9.4"
 image = { version = "0.25", default-features = false, features = ["png", "jpeg", "gif", "webp", "tiff", "bmp"] }
 tauri-plugin-dialog = "2.8.3"
 
+
+# Debug builds were taking ~18 GB: full debug info for the app and every dependency, and each
+# integration test links the whole app. Line tables keep backtraces readable; dependencies
+# get none (a debugger rarely steps into them).
+[profile.dev]
+debug = "line-tables-only"
+
+[profile.dev.package."*"]
+debug = false
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration
 [profile.release]

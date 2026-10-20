@@ -15,6 +15,7 @@ Read `README.md`, `docs/WINDOWS_HANDOFF.md`, `docs/MODULAR_INSTALL_PLAN.md` and 
 
 - `cd app && npm ci` to install; `npm run tauri dev` to run; `npm run build:local` for a signed macOS debug build.
 - `cargo test` in `crates/radial-packs` and in `app/src-tauri`; `python3 -m unittest discover -s scripts`.
+- Build folders (`app/src-tauri/target`, `crates/radial-packs/target`) once grew to 18 GB: Cargo keeps every old build file. Debug info is now trimmed in `Cargo.toml`; if a folder passes ~4 GB anyway, close the app and run `powershell -File scripts	rim_target.ps1` (or `-Clean`). The repository sits in OneDrive, which syncs `target` too; keep that in mind before adding large generated output.
 - Use `npm ci` or `npm i --ignore-scripts <pkg>`; a plain `npm install` may be blocked by a hook in the original workspace.
 
 ## macOS specifics
