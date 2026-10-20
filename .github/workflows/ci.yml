@@ -69,6 +69,6 @@ jobs:
           python -m unittest discover -s scripts -p "test_*.py" 2>&1 | tee test-output.txt
           status=${PIPESTATUS[0]}
           if [ "$status" -ne 0 ]; then
-            echo "::error title=Script tests failed::$(grep -E '^(ERROR|FAIL):|Error|Exception|assert' test-output.txt | head -25 | tr '\n' ' ' | cut -c1-1800)"
+            echo "::error title=Script tests failed::$(tail -n 45 test-output.txt | tr '\n' ' ' | cut -c1-1900)"
           fi
           exit "$status"
