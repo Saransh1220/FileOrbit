@@ -2,23 +2,43 @@
 //! "PDF tools" pack. Everything here is about documents; the conversion
 //! pipeline's entry points live in `engines/pdfium.rs`.
 
+pub mod pictures;
+pub mod render;
+pub mod text;
+
 use super::binaries::{self, Tool};
 use pdfium_render::prelude::*;
 use std::path::Path;
+use std::sync::{Mutex, OnceLock};
 
 /// PDFium, bound to the library the "PDF tools" pack installed.
 pub struct Library {
     pdfium: Pdfium,
 }
 
+/// PDFium can be bound only once per process, so the first conversion loads it and every
+/// later one reuses it. (Binding it a second time fails with "already initialized".)
+static SHARED: OnceLock<Library> = OnceLock::new();
+/// Keeps two conversions that start together from both trying to bind it.
+static LOADING: Mutex<()> = Mutex::new(());
+
 impl Library {
-    /// Loads the managed PDFium library, or says which pack to install.
-    pub fn load() -> Result<Self, String> {
+    /// The shared PDFium, loading it from the managed pack on first use. Says which
+    /// pack to install when it is missing.
+    pub fn load() -> Result<&'static Library, String> {
+        if let Some(library) = SHARED.get() {
+            return Ok(library);
+        }
+        let _turn = LOADING.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+        if let Some(library) = SHARED.get() {
+            return Ok(library);
+        }
         let path = binaries::find(Tool::Pdfium)?;
-        Self::load_from(&path)
+        let library = Self::bind(&path)?;
+        Ok(SHARED.get_or_init(|| library))
     }
 
-    pub fn load_from(path: &Path) -> Result<Self, String> {
+    fn bind(path: &Path) -> Result<Self, String> {
         let bindings = Pdfium::bind_to_library(path)
             .map_err(|e| format!("cannot load the PDF library at {}: {e}", path.display()))?;
         Ok(Self { pdfium: Pdfium::new(bindings) })

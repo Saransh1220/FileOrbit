@@ -3,7 +3,7 @@
 use super::target::{Engine, Target};
 use std::path::Path;
 
-use Engine::{Ffmpeg, LibreOffice, Pandoc};
+use Engine::{Ffmpeg, LibreOffice, Pandoc, Pdfium};
 
 struct Group {
     /// Pack that supplies ffmpeg for this group (ignored for other engines).
@@ -16,6 +16,17 @@ struct Group {
 pub const MAX_TARGETS: usize = 8;
 
 const GROUPS: &[Group] = &[
+    Group {
+        media_pack: "pdf",
+        inputs: &["pdf"],
+        targets: &[
+            ("png", Pdfium),
+            ("jpg", Pdfium),
+            ("txt", Pdfium),
+            ("docx", LibreOffice),
+            ("odt", LibreOffice),
+        ],
+    },
     Group {
         media_pack: "documents",
         inputs: &["doc", "rtf"],
@@ -76,6 +87,7 @@ const GROUPS: &[Group] = &[
             ("tiff", Ffmpeg),
             ("bmp", Ffmpeg),
             ("gif", Ffmpeg),
+            ("pdf", Pdfium),
         ],
     },
     #[cfg(target_os = "macos")]
@@ -160,6 +172,7 @@ pub fn pack_for(from_ext: &str, target_id: &str) -> Option<&'static str> {
         LibreOffice => "documents",
         Pandoc => "text",
         Engine::Sips => "images",
+        Pdfium => "pdf",
         Ffmpeg => group.media_pack,
     })
 }
@@ -207,6 +220,32 @@ mod tests {
         assert_eq!(engine_for("docx", "md"), Some(Pandoc));
         assert_eq!(engine_for("mp3", "wav"), Some(Ffmpeg));
         assert_eq!(engine_for("mp3", "mp3"), None);
+        assert_eq!(engine_for("pdf", "png"), Some(Pdfium));
+        assert_eq!(engine_for("pdf", "txt"), Some(Pdfium));
+        assert_eq!(engine_for("pdf", "docx"), Some(LibreOffice));
+        assert_eq!(engine_for("png", "pdf"), Some(Pdfium));
+        assert_eq!(engine_for("pdf", "pdf"), None);
+    }
+
+    #[test]
+    fn a_pdf_offers_pictures_text_and_word_documents() {
+        assert_eq!(ids("pdf"), vec!["png", "jpg", "txt", "docx", "odt"]);
+    }
+
+    #[test]
+    fn pictures_offer_pdf_among_their_formats() {
+        for ext in ["png", "jpg", "webp", "tiff", "bmp", "gif"] {
+            assert!(ids(ext).contains(&"pdf".to_string()), "{ext} should offer PDF");
+        }
+    }
+
+    #[test]
+    fn pdf_conversions_name_the_right_packs() {
+        assert_eq!(pack_for("pdf", "png"), Some("pdf"));
+        assert_eq!(pack_for("pdf", "txt"), Some("pdf"));
+        assert_eq!(pack_for("png", "pdf"), Some("pdf"));
+        // Word output comes from LibreOffice's PDF import, so it needs the Documents pack.
+        assert_eq!(pack_for("pdf", "docx"), Some("documents"));
     }
 
     #[test]
@@ -225,7 +264,7 @@ mod tests {
         for g in GROUPS {
             assert!(radial_packs::catalog::pack(g.media_pack).is_some(), "{}", g.media_pack);
         }
-        for p in ["documents", "text"] {
+        for p in ["documents", "text", "pdf"] {
             assert!(radial_packs::catalog::pack(p).is_some());
         }
     }

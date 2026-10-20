@@ -148,12 +148,14 @@ pub fn convert_file(input: &Path, target_id: &str, job_id: u64) -> Result<PathBu
         return Err("the source file no longer exists".to_string());
     }
     let output = naming::reserve_output_path(input, target_id)?;
-    if let Err(message) = engines::run(engine, input, &from_ext, &output, target_id, job_id) {
-        // The output name was reserved with an empty file; don't leave it behind.
-        let _ = std::fs::remove_file(&output);
-        return Err(message);
+    match engines::run(engine, input, &from_ext, &output, target_id, job_id) {
+        Ok(written) => Ok(written),
+        Err(message) => {
+            // The output name was reserved with an empty file; don't leave it behind.
+            let _ = std::fs::remove_file(&output);
+            Err(message)
+        }
     }
-    Ok(output)
 }
 
 /// Starts a conversion in the background and streams updates to the toast.

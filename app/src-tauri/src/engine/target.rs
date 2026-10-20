@@ -6,6 +6,8 @@ pub enum Engine {
     Pandoc,
     LibreOffice,
     Ffmpeg,
+    /// PDF pages to pictures and text, and pictures to PDF.
+    Pdfium,
     /// macOS-only image tool, used for formats ffmpeg cannot read (HEIC).
     Sips,
 }

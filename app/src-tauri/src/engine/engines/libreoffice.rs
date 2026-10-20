@@ -14,17 +14,17 @@ static ONE_AT_A_TIME: Mutex<()> = Mutex::new(());
 ///
 /// The settings profile is kept between conversions. Making a new one costs
 /// 10 to 20 seconds on every run (measured), against about 5 seconds when it is reused.
-pub fn convert(input: &Path, output: &Path, to_ext: &str, job_id: u64) -> Result<(), String> {
+pub fn convert(input: &Path, from_ext: &str, output: &Path, to_ext: &str, job_id: u64) -> Result<(), String> {
     let _turn = ONE_AT_A_TIME.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
     let work = std::env::temp_dir().join(format!("radial-convert-{}-{job_id}", std::process::id()));
     std::fs::create_dir_all(&work).map_err(|e| format!("cannot create scratch dir: {e}"))?;
     let profile = profile_dir();
 
-    let mut result = run_in(&work, &profile, input, output, to_ext);
+    let mut result = run_in(&work, &profile, input, from_ext, output, to_ext);
     if result.is_err() {
         // A crashed run can leave the profile damaged; one retry on a clean one is cheap insurance.
         let _ = std::fs::remove_dir_all(&profile);
-        result = run_in(&work, &profile, input, output, to_ext);
+        result = run_in(&work, &profile, input, from_ext, output, to_ext);
     }
     let _ = std::fs::remove_dir_all(&work);
     result
@@ -35,12 +35,17 @@ fn profile_dir() -> PathBuf {
     radial_packs::paths::default_home().join("libreoffice-profile")
 }
 
-fn run_in(work: &Path, profile: &Path, input: &Path, output: &Path, to_ext: &str) -> Result<(), String> {
+fn run_in(work: &Path, profile: &Path, input: &Path, from_ext: &str, output: &Path, to_ext: &str) -> Result<(), String> {
     std::fs::create_dir_all(profile).map_err(|e| format!("cannot create the LibreOffice profile: {e}"))?;
     let profile_url = url::Url::from_directory_path(profile).map_err(|_| "profile path is not a valid URL".to_string())?;
     let mut cmd = Command::new(binaries::find(Tool::LibreOffice)?);
-    cmd.arg(format!("-env:UserInstallation={profile_url}"))
-        .args(["--headless", "--convert-to", filter(to_ext), "--outdir"])
+    cmd.arg(format!("-env:UserInstallation={profile_url}"));
+    // A PDF opens in LibreOffice's drawing program by default, which cannot save a Word
+    // document. This asks for its word-processor import, which turns the text into a document.
+    if from_ext == "pdf" {
+        cmd.arg("--infilter=writer_pdf_import");
+    }
+    cmd.args(["--headless", "--convert-to", filter(to_ext), "--outdir"])
         .arg(work)
         .arg(input);
     process::run(cmd)?;
