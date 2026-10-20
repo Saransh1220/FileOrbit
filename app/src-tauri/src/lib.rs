@@ -9,6 +9,7 @@ mod overlay_catcher;
 mod overlay_drop;
 #[cfg(target_os = "windows")]
 mod overlay_native;
+mod overlay_placement;
 mod reveal;
 mod settings;
 mod status;

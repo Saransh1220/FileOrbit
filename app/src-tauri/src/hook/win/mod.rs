@@ -53,6 +53,13 @@ fn worker(app: AppHandle, rx: mpsc::Receiver<MouseEvent>) {
                 eprintln!("[hook] shift-drag, files selected in Explorer: {}", files.len());
                 !files.is_empty()
             }),
+            MouseEvent::Cancel => {
+                if trigger.cancel() {
+                    eprintln!("[hook] Esc -> close the ring");
+                    overlay::hide(&app);
+                }
+                TriggerAction::None
+            }
             MouseEvent::Up => {
                 let a = trigger.button_up();
                 if a != TriggerAction::None {

@@ -55,10 +55,26 @@ pub fn show_at_physical(app: &AppHandle, x: f64, y: f64, paths: &[PathBuf]) {
     let Some(win) = app.get_webview_window(OVERLAY_LABEL) else {
         return;
     };
-    let scale = app.monitor_from_point(x, y).ok().flatten().map_or(1.0, |m| m.scale_factor());
-    let size = (OVERLAY_SIZE * scale).round();
+    use crate::overlay_placement::{ring_origin, Area};
+
+    let monitor = app.monitor_from_point(x, y).ok().flatten();
+    let scale = monitor.as_ref().map_or(1.0, |m| m.scale_factor());
+    let size = (OVERLAY_SIZE * scale).round() as i32;
+    let (cursor_x, cursor_y) = (x.round() as i32, y.round() as i32);
+    // Keep the whole ring on the monitor the cursor is on, even right at its edge.
+    let (left, top) = match &monitor {
+        Some(m) => {
+            let (pos, extent) = (m.position(), m.size());
+            let area = Area { left: pos.x, top: pos.y, width: extent.width as i32, height: extent.height as i32 };
+            ring_origin(cursor_x, cursor_y, size, area)
+        }
+        None => (cursor_x - size / 2, cursor_y - size / 2),
+    };
+    // Move first, then size: moving a window to a monitor with a different scale makes Windows
+    // resize it for that scale, and the size we set afterwards must be the last word.
+    let _ = win.set_position(PhysicalPosition::new(left, top));
     let _ = win.set_size(PhysicalSize::new(size as u32, size as u32));
-    let _ = win.set_position(PhysicalPosition::new((x - size / 2.0).round() as i32, (y - size / 2.0).round() as i32));
+    let _ = win.set_position(PhysicalPosition::new(left, top));
     let _ = win.emit("ring-opened", ring_payload(paths));
     // Window and OLE calls belong on the UI thread, and the window is only
     // really visible once that thread has shown it.

@@ -9,6 +9,10 @@ export const STATUS_LABEL: Record<HookStatus, string> = {
   error: "Not running",
 };
 
+/** Windows blocks dragging from a window that runs as administrator onto one that does not. */
+export const WINDOWS_ADMIN_NOTE =
+  "Windows does not allow dragging files out of a window running as administrator. Open Explorer normally to use Shift+drag.";
+
 /** Longer help, shown only when the status needs the user to do something. */
 export const STATUS_HELP: Partial<Record<HookStatus, string>> = {
   "permission-denied":

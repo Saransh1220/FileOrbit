@@ -46,6 +46,15 @@ impl DragTrigger {
         TriggerAction::Show { x, y }
     }
 
+    /// The user abandoned the drag (Esc). Returns whether the ring was open, so the caller
+    /// knows to close it. The release that follows then reports nothing.
+    pub fn cancel(&mut self) -> bool {
+        let was_shown = self.shown;
+        self.pressed_at = None;
+        self.shown = false;
+        was_shown
+    }
+
     pub fn button_up(&mut self) -> TriggerAction {
         let was_shown = self.shown;
         self.pressed_at = None;
@@ -73,6 +82,20 @@ mod tests {
             t.button_dragged(20.0, 0.0, true, || true),
             TriggerAction::Show { x: 20.0, y: 0.0 }
         );
+    }
+
+    #[test]
+    fn cancelling_closes_the_ring_and_silences_the_release() {
+        let mut t = DragTrigger::default();
+        t.button_down(0.0, 0.0);
+        t.button_dragged(20.0, 0.0, true, || true);
+        assert!(t.cancel(), "the ring was open");
+        assert_eq!(t.button_up(), TriggerAction::None, "the release after Esc reports nothing");
+        // Cancelling when nothing is open is harmless and says so.
+        assert!(!t.cancel());
+        // A later drag works normally.
+        t.button_down(0.0, 0.0);
+        assert_eq!(t.button_dragged(20.0, 0.0, true, || true), TriggerAction::Show { x: 20.0, y: 0.0 });
     }
 
     #[test]

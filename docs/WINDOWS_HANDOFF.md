@@ -40,12 +40,12 @@ Still to do for Windows: elevated Explorer windows (UIPI), multi-monitor and DPI
 ## Remaining work (kept here so it survives a new context)
 
 Windows behaviour
-- [ ] Elevated Explorer windows: the hook cannot see them unless the app is elevated too (UIPI). Decide: document it, or offer an elevated mode.
-- [ ] Several monitors and mixed DPI: check ring placement, size and wedge hit-testing.
-- [ ] Keep the ring inside the screen edges (it can currently spill off).
-- [ ] Esc cancels the ring.
+- [x] The ring stays fully on the monitor the cursor is on (`overlay_placement.rs`, tested with the edge, corner and negative-coordinate cases).
+- [x] Esc closes the ring at once (a keyboard hook sends a cancel to the same trigger rules; Windows itself cancels the drag, so nothing is moved).
+- [x] Several monitors and mixed DPI: placement and size use the target monitor's own scale, moving first and sizing after. **Written but not run: this PC has one monitor.** Try it on a two-monitor setup, especially with different scale factors.
+- [x] Windows blocks dragging out of an elevated (administrator) window; this cannot be worked around from a normal app, so the manager says so. An elevated mode would need the app itself to run as administrator.
 - [ ] Desktop and Explorer tabs: only lightly tried; also try network folders and "Search results" views.
-- [ ] Download speed: resumable and parallel (range request) downloads; maybe a smaller audio-only ffmpeg. The wait is network-bound (measured 0.3 to 1.4 MB/s here), not our code.
+- [ ] Download speed: resumable downloads are done; parallel (range request) downloads and a smaller audio-only ffmpeg are not. The wait is network-bound (measured 0.3 to 1.4 MB/s here), not our code.
 
 Tests and release
 - [ ] **Data folder shares the installer's folder (Windows).** The NSIS installer puts the app in `%LOCALAPPDATA%\Radial Convert`, which is also where converters, downloads and `installed.json` live. Reinstalling or uninstalling the app can disturb user data. Move the data to its own folder (for example `%LOCALAPPDATA%\Radial Convert Data`), make the paths saved in `installed.json` relative so the folder can move, and migrate what is already there.

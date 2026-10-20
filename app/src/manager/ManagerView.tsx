@@ -1,5 +1,5 @@
 import { formatBytes } from "./format";
-import { STATUS_HELP, STATUS_LABEL } from "./hookStatus";
+import { STATUS_HELP, STATUS_LABEL, WINDOWS_ADMIN_NOTE } from "./hookStatus";
 import { PackRow } from "./PackRow";
 import type { DesignChoice, HookStatus, Overview, PackUpdate } from "./types";
 import "./ManagerView.css";
@@ -38,6 +38,7 @@ function Line({ label, value, action }: { label: string; value: string; action?:
 export function ManagerView(props: ManagerViewProps) {
   const { status, overview, updates, designs, design, problem } = props;
   const help = STATUS_HELP[status];
+  const onWindows = navigator.userAgent.includes("Windows");
 
   return (
     <main className="manager">
@@ -49,6 +50,7 @@ export function ManagerView(props: ManagerViewProps) {
         </p>
       </header>
       {help && <p className="help">{help}</p>}
+      {onWindows && status === "listening" && <p className="note">{WINDOWS_ADMIN_NOTE}</p>}
 
       <section>
         <h2>Converters</h2>
