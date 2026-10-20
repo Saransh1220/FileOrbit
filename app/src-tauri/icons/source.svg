@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <rect width="1024" height="1024" rx="230" fill="#1f2430"/>
+  <path d="M 444.10 358.33 L 375.38 202.84 A 338 338 0 0 1 648.62 202.84 L 579.90 358.33 A 168 168 0 0 0 444.10 358.33 Z" fill="#e9ecf3" stroke="#e9ecf3" stroke-width="26" stroke-linejoin="round"/>
+  <path d="M 611.13 376.36 L 711.43 239.11 A 338 338 0 0 1 848.05 475.73 L 679.03 493.97 A 168 168 0 0 0 611.13 376.36 Z" fill="#5b8def" stroke="#5b8def" stroke-width="26" stroke-linejoin="round"/>
+  <path d="M 679.03 530.03 L 848.05 548.27 A 338 338 0 0 1 711.43 784.89 L 611.13 647.64 A 168 168 0 0 0 679.03 530.03 Z" fill="#e9ecf3" stroke="#e9ecf3" stroke-width="26" stroke-linejoin="round"/>
+  <path d="M 579.90 665.67 L 648.62 821.16 A 338 338 0 0 1 375.38 821.16 L 444.10 665.67 A 168 168 0 0 0 579.90 665.67 Z" fill="#e9ecf3" stroke="#e9ecf3" stroke-width="26" stroke-linejoin="round"/>
+  <path d="M 412.87 647.64 L 312.57 784.89 A 338 338 0 0 1 175.95 548.27 L 344.97 530.03 A 168 168 0 0 0 412.87 647.64 Z" fill="#e9ecf3" stroke="#e9ecf3" stroke-width="26" stroke-linejoin="round"/>
+  <path d="M 344.97 493.97 L 175.95 475.73 A 338 338 0 0 1 312.57 239.11 L 412.87 376.36 A 168 168 0 0 0 344.97 493.97 Z" fill="#e9ecf3" stroke="#e9ecf3" stroke-width="26" stroke-linejoin="round"/>
+  <circle cx="512.0" cy="512.0" r="64" fill="#e9ecf3"/>
+</svg>

@@ -26,8 +26,8 @@ Windows  irm https://github.com/OWNER/REPO/releases/latest/download/install.ps1 
 
 These need your accounts and secrets, so they are not automated.
 
-1. **Create the GitHub repository** and push this folder to it. Choose and add a `LICENSE` file for Radial Convert's own code (the engines keep their own licenses, listed in `THIRD_PARTY_NOTICES.md`).
-2. **Replace the placeholder app icon.** `app/src-tauri/icons/` still holds the scaffold's default icons. Generate real ones with `npm run tauri icon path/to/icon.png` (run inside `app/`).
+1. **Repository and license: done.** The code is at github.com/Saransh1220/FileOrbit under the MIT license (`LICENSE`); the converters keep their own licenses, listed in `THIRD_PARTY_NOTICES.md`.
+2. **App icon: done.** `scripts/make_icon.py` writes `app/src-tauri/icons/source.svg` (the dial on a graphite tile) and `npm run tauri icon src-tauri/icons/source.svg` (inside `app/`) produces every size. Replace it with a designed icon whenever you have one.
 3. **Apple signing and notarization** (macOS users otherwise see "cannot be opened because the developer cannot be verified" if they download the dmg in a browser). Needs the Apple Developer Program (paid, per year).
    1. In your Apple Developer account, create a **Developer ID Application** certificate and export it from Keychain Access as a `.p12` file with a password.
    2. Create an **app-specific password** at appleid.apple.com (used only for notarization). Note your **Team ID**.
@@ -91,9 +91,12 @@ A developer machine hides missing-pack problems because Homebrew's tools are on 
 
 | Piece | Status |
 |---|---|
+| CI (`ci.yml`) | Runs on every push to GitHub. It failed on every push until the converter source folder (`app/src-tauri/src/engine/engines/`) was committed: a `.gitignore` rule had been hiding it. A fresh clone is now built and tested to prove it. |
 | `install.sh` | Tested against a local fake release: success, tampered CLI, tampered app (nothing installed), missing checksum entry, `--no-app`, `--packs`, replacing an existing app, unreachable server. Not yet run against a real GitHub release or in a real terminal pipe (`curl \| sh` with the interactive picker). |
-| `install.ps1` | **Never run.** Written and reviewed only; there is no PowerShell on the development Mac. Test it on Windows first. |
+| `install.ps1` | Tested on Windows 11 against a fake release (`scripts/test_install_ps1.py`): normal install, tampered CLI, tampered app, file missing from the checksums, the placeholder address, an unreachable server. Not yet run against a real GitHub release. |
 | `mirror_artifacts.py` | Tested with local files and a fake `gh` (checksum mismatch stops everything, release created as not-latest, upload replaces same-named files). Not yet run against the real upstream files or a real repo. |
-| `release.yml` | Valid YAML and consistent job wiring, **never run on GitHub**. Expect to fix small things on the first real run (runner image names, bundle paths). |
+| `release.yml` | Valid YAML and consistent job wiring, **never run on GitHub** (it runs on a version tag or by hand). Expect to fix small things on the first real run (runner image names, bundle paths). |
+| Windows installer (NSIS) | Built and installed on a Windows 11 PC. Building it needs a download of the NSIS tool from GitHub; on a slow connection Tauri's built-in timeout can fail it, and running the build again usually works. |
+| msi (LibreOffice) unpack | Works on Windows, including an install folder with a space in its name. |
 | Notarization | Not exercised: needs your Apple credentials. |
-| Windows installer (NSIS) and msi unpack | Not exercised: needs a Windows machine. |
+| macOS build | Built by the original author on a Mac earlier; **not rebuilt since the Windows work, the manager window, the themes and the download cache.** |

@@ -18,8 +18,10 @@
   Everything downloaded is checked against the release's SHA256SUMS before use.
   Other overrides: RADIAL_BASE_URL, RADIAL_INSTALL_DIR.
 
-  NOT YET TESTED ON WINDOWS. It was written and reviewed on a Mac with no
-  PowerShell available; run it on a Windows machine before relying on it.
+  Tested on Windows 11 against a fake release (scripts/test_install_ps1.py): a
+  normal install, a tampered CLI, a tampered app, a file missing from the
+  checksums, the placeholder address, and an unreachable server. Not yet run
+  against a real GitHub release.
 #>
 [CmdletBinding()]
 param(

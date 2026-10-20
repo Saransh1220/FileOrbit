@@ -14,7 +14,7 @@ Existing files are never overwritten: a second conversion gives `report (1).pdf`
 | Platform | State |
 |---|---|
 | **macOS** | Works: Shift+drag, the dial, conversions, install prompts, the `radial` CLI. |
-| **Windows** | **Partly working.** Shift+drag from Explorer or the desktop opens the dial, and a drop on a wedge reaches the conversion code (tried on one Windows 11 PC with a missing-pack prompt; conversions themselves, the `radial` CLI, `install.ps1` and the installer have not been run there). See `docs/WINDOWS_HANDOFF.md`. |
+| **Windows** | **Works on the one Windows 11 PC it was tried on:** Shift+drag from Explorer or the desktop, the dial, installing and removing converters, audio and document conversions, the manager window, the `radial` CLI and the installer. Not yet tried: several monitors, the Text pack, the signed/published release. See `docs/WINDOWS_HANDOFF.md`. |
 
 ## Converters are optional packs
 
@@ -32,9 +32,11 @@ Pick them with `radial install` (a multi-select in the terminal), or just drop a
 
 ## Install (once a release is published)
 
+No release exists yet; until one does, build it yourself (below).
+
 ```
-macOS    curl -fsSL https://github.com/OWNER/REPO/releases/latest/download/install.sh | sh
-Windows  irm https://github.com/OWNER/REPO/releases/latest/download/install.ps1 | iex
+macOS    curl -fsSL https://github.com/Saransh1220/FileOrbit/releases/latest/download/install.sh | sh
+Windows  irm https://github.com/Saransh1220/FileOrbit/releases/latest/download/install.ps1 | iex
 ```
 
 ## Develop
@@ -66,4 +68,4 @@ python3 -m unittest discover -s scripts      # install.sh and the mirror tool (i
 
 ## Licenses
 
-The converter programs keep their own licenses; see `THIRD_PARTY_NOTICES.md`. Add a `LICENSE` file for this project's own code before publishing.
+This project is under the MIT license (`LICENSE`). The converter programs it downloads keep their own licenses; see `THIRD_PARTY_NOTICES.md`.

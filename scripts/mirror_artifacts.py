@@ -94,7 +94,8 @@ def release_notes(tag: str) -> str:
 
 
 def gh(args: list[str]) -> subprocess.CompletedProcess:
-    return subprocess.run(["gh", *args], capture_output=True, text=True)
+    # The full path `which` found, not just "gh": Windows only finds .exe files by bare name.
+    return subprocess.run([shutil.which("gh") or "gh", *args], capture_output=True, text=True)
 
 
 def publish(repo: str, tag: str, files: list[Path], notes_file: Path) -> None:

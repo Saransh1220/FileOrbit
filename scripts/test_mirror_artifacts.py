@@ -108,10 +108,14 @@ class Mirroring(unittest.TestCase):
     def install_fake_gh(self, log: Path, release_exists: bool = False) -> None:
         bindir = self.tmp / "bin"
         bindir.mkdir(exist_ok=True)
-        gh = bindir / "gh"
         view_rc = 0 if release_exists else 1
-        gh.write_text(f'#!/bin/sh\necho "$@" >> "{log}"\n[ "$1 $2" = "release view" ] && exit {view_rc}\nexit 0\n')
-        gh.chmod(gh.stat().st_mode | stat.S_IEXEC)
+        if os.name == "nt":
+            gh = bindir / "gh.cmd"
+            gh.write_text(f'@echo off\r\necho %* >> "{log}"\r\nif "%1 %2"=="release view" exit /b {view_rc}\r\nexit /b 0\r\n')
+        else:
+            gh = bindir / "gh"
+            gh.write_text(f'#!/bin/sh\necho "$@" >> "{log}"\n[ "$1 $2" = "release view" ] && exit {view_rc}\nexit 0\n')
+            gh.chmod(gh.stat().st_mode | stat.S_IEXEC)
         self._old_path = os.environ["PATH"]
         os.environ["PATH"] = f"{bindir}{os.pathsep}{self._old_path}"
         self.addCleanup(lambda: os.environ.__setitem__("PATH", self._old_path))
