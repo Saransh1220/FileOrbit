@@ -33,9 +33,7 @@ fn log_event(message: String) {
 /// A file was dropped on a wedge: convert each dropped file to that format.
 #[tauri::command]
 fn start_conversion(app: AppHandle, paths: Vec<String>, target: String) {
-    for path in paths {
-        engine::jobs::start(app.clone(), PathBuf::from(path), target.clone());
-    }
+    engine::jobs::start(app, paths.into_iter().map(PathBuf::from).collect(), target);
 }
 
 /// The user clicked Install on a "needs pack" toast.

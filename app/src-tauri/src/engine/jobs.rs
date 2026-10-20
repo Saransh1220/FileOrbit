@@ -4,6 +4,7 @@
 //! a "needs pack" state; the toast offers to install it, and once it is
 //! installed the same job carries on.
 
+use super::batch::{self, Outcome, Summary};
 use super::binaries::{self, Tool};
 use super::pending::{PendingJob, PendingJobs};
 use super::{download_text, engines, naming, registry};
@@ -47,6 +48,10 @@ pub struct JobUpdate {
     pub progress: Option<u8>,
     /// Short phase text such as "Downloading" or "Unpacking".
     pub message: Option<String>,
+    /// How many files the job has (1 for a single file).
+    pub count: u32,
+    /// How many of them did not convert, once the job is done.
+    pub failed: u32,
 }
 
 impl JobUpdate {
@@ -64,11 +69,13 @@ impl JobUpdate {
             download_mb: None,
             progress: None,
             message: None,
+            count: 1,
+            failed: 0,
         }
     }
 
     fn with(&self, state: JobState) -> Self {
-        Self { state, output: None, error: None, progress: None, message: None, ..self.clone() }
+        Self { state, output: None, error: None, progress: None, message: None, failed: 0, ..self.clone() }
     }
 }
 
@@ -158,18 +165,33 @@ pub fn convert_file(input: &Path, target_id: &str, job_id: u64) -> Result<PathBu
     }
 }
 
-/// Starts a conversion in the background and streams updates to the toast.
-pub fn start(app: AppHandle, input: PathBuf, target_id: String) {
+/// Starts converting the dropped files in the background and streams updates to the toast.
+/// Several files are one job: one toast, one summary.
+pub fn start(app: AppHandle, inputs: Vec<PathBuf>, target_id: String) {
+    if inputs.is_empty() {
+        return;
+    }
     let id = NEXT_ID.fetch_add(1, Ordering::Relaxed);
-    run(app, id, input, target_id);
+    run(app, id, inputs, target_id);
 }
 
-fn run(app: AppHandle, id: u64, input: PathBuf, target_id: String) {
-    let name = input.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
-    let base = JobUpdate::new(id, &name, &target_id, JobState::Running);
+/// The base update for a job: its name and how many files it has.
+fn job_base(id: u64, inputs: &[PathBuf], target_id: &str) -> JobUpdate {
+    let mut base = JobUpdate::new(id, &batch::job_name(inputs), target_id, JobState::Running);
+    base.count = inputs.len() as u32;
+    base
+}
 
-    if let Some(missing) = missing_pack(&input, &target_id, &binaries::find) {
-        app.state::<PendingJobs>().insert(id, PendingJob { input, target: target_id, pack: missing.pack });
+/// The first pack any of the files needs and does not have yet.
+fn first_missing_pack(inputs: &[PathBuf], target_id: &str) -> Option<MissingPack> {
+    inputs.iter().find_map(|input| missing_pack(input, target_id, &binaries::find))
+}
+
+fn run(app: AppHandle, id: u64, inputs: Vec<PathBuf>, target_id: String) {
+    let base = job_base(id, &inputs, &target_id);
+
+    if let Some(missing) = first_missing_pack(&inputs, &target_id) {
+        app.state::<PendingJobs>().insert(id, PendingJob { inputs, target: target_id, pack: missing.pack });
         let mut update = base.with(JobState::NeedsPack);
         update.pack = Some(missing.pack.to_string());
         update.pack_title = Some(missing.title);
@@ -181,21 +203,38 @@ fn run(app: AppHandle, id: u64, input: PathBuf, target_id: String) {
     }
 
     crate::toast::publish(&app, &base);
-    std::thread::spawn(move || finish(&app, &base, &input, &target_id));
+    std::thread::spawn(move || finish(&app, &base, &inputs, &target_id));
 }
 
-/// Runs the conversion and publishes how it ended.
-fn finish(app: &AppHandle, base: &JobUpdate, input: &Path, target_id: &str) {
-    let update = match convert_file(input, target_id, base.id) {
-        Ok(path) => {
+/// Converts the files one after another and publishes how the job ended.
+fn finish(app: &AppHandle, base: &JobUpdate, inputs: &[PathBuf], target_id: &str) {
+    let mut outcome = Outcome::default();
+    for (index, input) in inputs.iter().enumerate() {
+        if inputs.len() > 1 {
+            let mut running = base.with(JobState::Running);
+            running.message = Some(batch::progress_line(index + 1, inputs.len(), input));
+            crate::toast::publish(app, &running);
+        }
+        match convert_file(input, target_id, base.id) {
+            Ok(path) => outcome.outputs.push(path),
+            Err(message) => {
+                eprintln!("[job {}] {} failed: {message}", base.id, input.display());
+                outcome.errors.push(message);
+            }
+        }
+    }
+
+    let update = match batch::summarize(&outcome) {
+        Summary::Done { first, converted, failed } => {
             let mut done = base.with(JobState::Done);
-            done.output = Some(path.to_string_lossy().into_owned());
+            done.output = Some(first.to_string_lossy().into_owned());
+            done.count = converted;
+            done.failed = failed;
             done
         }
-        Err(message) => {
-            eprintln!("[job {}] failed: {message}", base.id);
+        Summary::Failed { error } => {
             let mut failed = base.with(JobState::Failed);
-            failed.error = Some(message);
+            failed.error = Some(error);
             failed
         }
     };
@@ -210,15 +249,13 @@ pub fn install_pack_for_job(app: AppHandle, id: u64) {
     };
     // One install at a time; if the manager window is installing, say so on the toast.
     if let Err(message) = app.state::<crate::manager::InstallLock>().begin(pending.pack) {
-        let name = pending.input.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
-        let mut failed = JobUpdate::new(id, &name, &pending.target, JobState::Failed);
+        let mut failed = job_base(id, &pending.inputs, &pending.target).with(JobState::Failed);
         failed.error = Some(message);
         crate::toast::publish(&app, &failed);
         return;
     }
     std::thread::spawn(move || {
-        let name = pending.input.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
-        let base = JobUpdate::new(id, &name, &pending.target, JobState::Running);
+        let base = job_base(id, &pending.inputs, &pending.target);
         let title = radial_packs::catalog::pack(pending.pack).map(|p| p.title).unwrap_or(pending.pack);
         let engine = pack_needs(pending.pack).0;
 
@@ -260,7 +297,7 @@ pub fn install_pack_for_job(app: AppHandle, id: u64) {
         match result {
             Ok(_) => {
                 crate::toast::publish(&app, &base);
-                finish(&app, &base, &pending.input, &pending.target);
+                finish(&app, &base, &pending.inputs, &pending.target);
             }
             Err(message) => {
                 eprintln!("[job {id}] could not install {}: {message}", pending.pack);

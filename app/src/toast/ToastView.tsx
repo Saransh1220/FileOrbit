@@ -29,7 +29,7 @@ function title(job: JobUpdate) {
     case "running":
       return `Converting to ${job.target}…`;
     case "done":
-      return `Saved ${fileName(job.output ?? "")}`;
+      return job.count > 1 ? `Converted ${job.count} files` : `Saved ${fileName(job.output ?? "")}`;
     case "needs-pack":
       return `Install ${job.pack_title} support?`;
     case "installing":
@@ -44,8 +44,18 @@ function needsPackDetail(job: JobUpdate) {
   return `Needs ${job.engine ?? "a converter"}${size}`;
 }
 
+function doneDetail(job: JobUpdate) {
+  if (job.count <= 1 && job.failed === 0) return job.name;
+  const failed = job.failed > 0 ? ` · ${job.failed} could not be converted` : "";
+  return `Next to the originals${failed}`;
+}
+
 function detail(job: JobUpdate) {
   switch (job.state) {
+    case "running":
+      return job.message ?? job.name;
+    case "done":
+      return doneDetail(job);
     case "failed":
       return job.error;
     case "needs-pack":

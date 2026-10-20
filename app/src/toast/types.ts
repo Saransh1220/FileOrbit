@@ -19,4 +19,8 @@ export interface JobUpdate {
   progress: number | null;
   /** Short phase text such as "Downloading" or "Unpacking". */
   message: string | null;
+  /** How many files the job has; 1 for a single file. */
+  count: number;
+  /** How many of them did not convert, once the job is done. */
+  failed: number;
 }

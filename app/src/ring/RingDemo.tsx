@@ -22,14 +22,17 @@ const BACKGROUNDS: Record<string, string> = {
   "busy photo": "repeating-linear-gradient(45deg,#2b6a8f 0 18px,#e8b04a 18px 36px,#a23b52 36px 54px)",
 };
 
-const blank = { pack: null, pack_title: null, engine: null, download_mb: null, progress: null, message: null };
+const blank = { pack: null, pack_title: null, engine: null, download_mb: null, progress: null, message: null, count: 1, failed: 0 };
 
 const JOBS: Record<string, JobUpdate> = {
   running: { id: 1, name: "Patient Acknowledgement Screen.docx", target: "PDF", state: "running", output: null, error: null, ...blank },
   done: { id: 2, name: "Patient Acknowledgement Screen.docx", target: "PDF", state: "done", output: "/Users/me/Downloads/Patient Acknowledgement Screen.pdf", error: null, ...blank },
-  "needs-pack": { id: 4, name: "report.docx", target: "PDF", state: "needs-pack", output: null, error: null, pack: "documents", pack_title: "Documents", engine: "LibreOffice", download_mb: 375, progress: null, message: null },
-  installing: { id: 5, name: "report.docx", target: "PDF", state: "installing", output: null, error: null, pack: "documents", pack_title: "Documents", engine: "LibreOffice", download_mb: null, progress: 42, message: "Downloading LibreOffice: 157 of 375 MB · 1.4 MB/s · 3 min left" },
-  unpacking: { id: 6, name: "report.docx", target: "PDF", state: "installing", output: null, error: null, pack: "documents", pack_title: "Documents", engine: "LibreOffice", download_mb: null, progress: null, message: "Unpacking LibreOffice, this can take a minute" },
+  "needs-pack": { id: 4, name: "report.docx", target: "PDF", state: "needs-pack", output: null, error: null, pack: "documents", pack_title: "Documents", engine: "LibreOffice", download_mb: 375, progress: null, message: null, count: 1, failed: 0 },
+  installing: { id: 5, name: "report.docx", target: "PDF", state: "installing", output: null, error: null, pack: "documents", pack_title: "Documents", engine: "LibreOffice", download_mb: null, progress: 42, message: "Downloading LibreOffice: 157 of 375 MB · 1.4 MB/s · 3 min left", count: 1, failed: 0 },
+  unpacking: { id: 6, name: "report.docx", target: "PDF", state: "installing", output: null, error: null, pack: "documents", pack_title: "Documents", engine: "LibreOffice", download_mb: null, progress: null, message: "Unpacking LibreOffice, this can take a minute", count: 1, failed: 0 },
+  "batch running": { id: 7, name: "5 files", target: "PDF", state: "running", output: null, error: null, ...blank, count: 5, message: "2 of 5: Quarterly report.docx" },
+  "batch done": { id: 8, name: "5 files", target: "PDF", state: "done", output: "/Users/me/Downloads/Quarterly report.pdf", error: null, ...blank, count: 5 },
+  "batch partial": { id: 9, name: "5 files", target: "PDF", state: "done", output: "/Users/me/Downloads/Quarterly report.pdf", error: null, ...blank, count: 3, failed: 2 },
   failed: { id: 3, name: "report.docx", target: "PDF", state: "failed", output: null, error: "no download is published for libreoffice on macos-aarch64 and none is installed on this machine", ...blank },
 };
 

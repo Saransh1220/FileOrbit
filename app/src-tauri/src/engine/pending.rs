@@ -5,7 +5,8 @@ use std::path::PathBuf;
 use std::sync::Mutex;
 
 pub struct PendingJob {
-    pub input: PathBuf,
+    /// Every file of the drop; they convert in this order once the pack is installed.
+    pub inputs: Vec<PathBuf>,
     pub target: String,
     pub pack: &'static str,
 }
@@ -36,7 +37,7 @@ mod tests {
     use super::*;
 
     fn job(pack: &'static str) -> PendingJob {
-        PendingJob { input: "/a/b.docx".into(), target: "pdf".into(), pack }
+        PendingJob { inputs: vec!["/a/b.docx".into()], target: "pdf".into(), pack }
     }
 
     #[test]
