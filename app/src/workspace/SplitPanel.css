@@ -1,0 +1,110 @@
+/* A small sheet that sits right above the bottom bar. */
+.split {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--m-line);
+  background: color-mix(in srgb, var(--m-fg) 4%, var(--m-bg));
+  font-size: 13px;
+}
+
+.split .head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.split h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.split .close {
+  padding: 2px;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--m-muted);
+  cursor: pointer;
+}
+
+.split .close:hover {
+  color: var(--m-fg);
+  text-decoration: underline;
+}
+
+.split .modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+}
+
+.split .modes label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.split input[type="number"],
+.split input[type="text"] {
+  padding: 5px 8px;
+  border: 1px solid var(--m-line);
+  border-radius: var(--m-radius);
+  font: inherit;
+  color: var(--m-fg);
+  background: var(--m-bg);
+}
+
+.split input[type="number"] {
+  width: 64px;
+}
+
+.split input[type="text"] {
+  width: 170px;
+}
+
+.split input:focus-visible,
+.split button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--m-accent) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.split input[type="radio"] {
+  accent-color: var(--m-accent);
+}
+
+.split .preview {
+  margin: 0;
+  color: var(--m-muted);
+  overflow-wrap: anywhere;
+}
+
+.split .preview.error {
+  color: var(--m-danger);
+}
+
+.split .go {
+  align-self: flex-start;
+  padding: 7px 16px;
+  border: 1px solid var(--m-accent);
+  border-radius: var(--m-radius);
+  font: inherit;
+  font-weight: 650;
+  color: var(--m-on-accent);
+  background: var(--m-accent);
+  cursor: pointer;
+}
+
+.split .go:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+[data-design="brutal"] .split .go {
+  border: 2px solid oklch(0.15 0 0);
+  box-shadow: 2px 2px 0 oklch(0.15 0 0);
+}

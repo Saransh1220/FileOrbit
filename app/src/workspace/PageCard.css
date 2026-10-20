@@ -70,6 +70,27 @@
   color: var(--m-faint);
 }
 
+.blank-note {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--m-faint) 60%, #fff);
+}
+
+/* A small colored dot ties a page to its file when several files are open. */
+.number .tag {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--tag-color);
+}
+
 .number {
   font-size: 12px;
   font-variant-numeric: tabular-nums;

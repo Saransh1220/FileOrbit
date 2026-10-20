@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { PageCard } from "./PageCard";
+import { shapeOfPage } from "./layout";
 import type { ThumbFetcher } from "./thumbnails";
 import type { Modifiers, OpenedFile, PlanPage } from "./types";
 import { usePageDrag } from "./usePageDrag";
@@ -40,7 +41,10 @@ export function PageGrid({ files, pages, selected, cell, pixelRatio, load, onCho
             key={page.id}
             number={index + 1}
             page={page}
-            shape={files[page.source].pages[page.page]}
+            shape={shapeOfPage(files, page)}
+            path={page.blank ? "" : files[page.source].path}
+            tag={files.length > 1 && !page.blank ? page.source : null}
+            fileName={page.blank ? "Blank page" : files[page.source].name}
             cell={cell}
             pixelRatio={pixelRatio}
             selected={selected.has(page.id)}

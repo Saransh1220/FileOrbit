@@ -8,7 +8,7 @@ use serde::Deserialize;
 use std::path::{Path, PathBuf};
 
 /// One page of the new PDF.
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct PageRef {
     /// Index into the list of input files.
     pub source: usize,
@@ -16,6 +16,28 @@ pub struct PageRef {
     pub page: u32,
     /// Extra clockwise turn on top of the page's own, in degrees: 0, 90, 180 or 270.
     pub turn: u16,
+    /// A new empty page of this width and height in points; `source` and `page` are ignored.
+    #[serde(default)]
+    pub blank: Option<[f32; 2]>,
+}
+
+/// What a saved file is called next to the first input.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum SaveKind {
+    /// All the planned pages: "name (edited).pdf".
+    Edited,
+    /// A selection saved on its own: "name (extract).pdf".
+    Extract,
+}
+
+impl SaveKind {
+    fn suffix(self) -> &'static str {
+        match self {
+            SaveKind::Edited => " (edited)",
+            SaveKind::Extract => " (extract)",
+        }
+    }
 }
 
 /// The rotation a page ends up with: its own plus the extra turn.
@@ -43,6 +65,12 @@ pub fn validate(page_counts: &[u32], pages: &[PageRef]) -> Result<(), String> {
         return Err("a PDF can hold at most 65,535 pages".into());
     }
     for (position, page) in pages.iter().enumerate() {
+        if let Some([width, height]) = page.blank {
+            if !(width.is_finite() && height.is_finite() && width >= 1.0 && height >= 1.0 && width <= 14400.0 && height <= 14400.0) {
+                return Err(format!("page {} is a blank page of an impossible size", position + 1));
+            }
+            continue;
+        }
         let Some(count) = page_counts.get(page.source) else {
             return Err(format!("page {} points at a file that is not open", position + 1));
         };
@@ -66,6 +94,13 @@ pub fn write(library: &Library, inputs: &[PathBuf], pages: &[PageRef], output: &
     let mut document = library.create()?;
     for (position, page) in pages.iter().enumerate() {
         let at = position as PdfPageIndex;
+        if let Some([width, height]) = page.blank {
+            document
+                .pages_mut()
+                .create_page_at_index(PdfPagePaperSize::Custom(PdfPoints::new(width), PdfPoints::new(height)), at)
+                .map_err(|e| format!("cannot add a blank page at {}: {e}", position + 1))?;
+            continue;
+        }
         document
             .pages_mut()
             .copy_page_from_document(&sources[page.source], page.page as PdfPageIndex, at)
@@ -80,11 +115,20 @@ pub fn write(library: &Library, inputs: &[PathBuf], pages: &[PageRef], output: &
     Ok(pages.len() as u32)
 }
 
-/// Saves the plan next to the first input as "<name> (edited).pdf" (then "(1)", never
-/// overwriting anything). Leaves nothing behind if it fails. Returns the file and its page count.
-pub fn save_next_to_first(library: &Library, inputs: &[PathBuf], pages: &[PageRef]) -> Result<(PathBuf, u32), String> {
+/// Saves the plan next to the first input as "<name> (edited).pdf" or "(extract)" (then "(1)",
+/// never overwriting anything). Leaves nothing behind if it fails. Returns the file and its page count.
+pub fn save_next_to_first(library: &Library, inputs: &[PathBuf], pages: &[PageRef], kind: SaveKind) -> Result<(PathBuf, u32), String> {
+    save_with_suffix(library, inputs, pages, kind.suffix())
+}
+
+/// One part of a split: "<name> (part 2).pdf".
+pub fn save_part(library: &Library, inputs: &[PathBuf], pages: &[PageRef], part: u32) -> Result<(PathBuf, u32), String> {
+    save_with_suffix(library, inputs, pages, &format!(" (part {part})"))
+}
+
+fn save_with_suffix(library: &Library, inputs: &[PathBuf], pages: &[PageRef], suffix: &str) -> Result<(PathBuf, u32), String> {
     let first = inputs.first().ok_or_else(|| "there is no file to save from".to_string())?;
-    let output = crate::engine::naming::reserve_with_suffix(first, " (edited)", "pdf")?;
+    let output = crate::engine::naming::reserve_with_suffix(first, suffix, "pdf")?;
     match write(library, inputs, pages, &output) {
         Ok(count) => Ok((output, count)),
         Err(message) => {
@@ -99,7 +143,15 @@ mod tests {
     use super::*;
 
     fn page(source: usize, page: u32, turn: u16) -> PageRef {
-        PageRef { source, page, turn }
+        PageRef { source, page, turn, blank: None }
+    }
+
+    #[test]
+    fn a_blank_page_needs_no_file_but_a_sane_size() {
+        let blank = |w, h| PageRef { source: 0, page: 0, turn: 0, blank: Some([w, h]) };
+        assert!(validate(&[], &[blank(595.0, 842.0)]).is_ok());
+        assert!(validate(&[], &[blank(0.0, 842.0)]).is_err());
+        assert!(validate(&[], &[blank(f32::NAN, 842.0)]).is_err());
     }
 
     #[test]

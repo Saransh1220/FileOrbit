@@ -8,13 +8,16 @@ interface BottomBarProps {
   edited: boolean;
   status: SaveStatus;
   onSave: () => void;
+  onExtract: () => void;
+  onToggleSplit: () => void;
+  splitOpen: boolean;
   onShowSaved: (path: string) => void;
 }
 
 const pagesText = (count: number) => (count === 1 ? "1 page" : `${count} pages`);
 
 /** What there is to save, how it went, and the one main button. */
-export function BottomBar({ total, selected, edited, status, onSave, onShowSaved }: BottomBarProps) {
+export function BottomBar({ total, selected, edited, status, onSave, onExtract, onToggleSplit, splitOpen, onShowSaved }: BottomBarProps) {
   const saving = status.kind === "saving";
   return (
     <footer className="bottombar">
@@ -38,6 +41,13 @@ export function BottomBar({ total, selected, edited, status, onSave, onShowSaved
         )}
         {status.kind === "error" && <span className="error">{status.message}</span>}
       </div>
+
+      <button type="button" className="secondary" disabled={selected === 0 || saving} onClick={onExtract} title="Saves the chosen pages as a separate PDF">
+        <Icon name="extract" /> Extract
+      </button>
+      <button type="button" className={`secondary ${splitOpen ? "on" : ""}`} disabled={total < 2 || saving} onClick={onToggleSplit} title="Cuts the pages into several PDFs">
+        <Icon name="scissors" /> Split…
+      </button>
 
       <button type="button" className="primary" disabled={saving || !edited} onClick={onSave} title="Writes a new PDF next to the original (Ctrl+S)">
         <Icon name="save" />

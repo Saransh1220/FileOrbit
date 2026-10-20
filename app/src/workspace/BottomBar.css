@@ -75,6 +75,41 @@
   text-decoration: underline;
 }
 
+.bottombar .secondary {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid var(--m-line);
+  border-radius: var(--m-radius);
+  font: inherit;
+  font-weight: 600;
+  color: var(--m-fg);
+  background: none;
+  cursor: pointer;
+}
+
+.bottombar .secondary svg {
+  width: 16px;
+  height: 16px;
+}
+
+.bottombar .secondary:hover:not(:disabled),
+.bottombar .secondary.on {
+  border-color: var(--m-accent);
+}
+
+.bottombar .secondary:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.bottombar .secondary:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--m-accent) 55%, transparent);
+  outline-offset: 2px;
+}
+
 .bottombar .primary {
   flex: none;
   display: flex;

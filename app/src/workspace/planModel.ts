@@ -82,7 +82,44 @@ export function move(pages: PlanPage[], ids: ReadonlySet<number>, beforeIndex: n
 
 /** What `workspace_save` needs. */
 export function toSavedPages(pages: PlanPage[]): SavedPage[] {
-  return pages.map(({ source, page, turn }) => ({ source, page, turn }));
+  return pages.map(({ source, page, turn, blank }) => (blank ? { source, page, turn, blank } : { source, page, turn }));
+}
+
+/** Adds pages (the pages of a newly opened file) at the end. */
+export function append(pages: PlanPage[], more: PlanPage[]): PlanPage[] {
+  return more.length === 0 ? pages : [...pages, ...more];
+}
+
+/** Drops every page of one file. Refuses to leave the plan without a page of some file (blank pages alone are not a document). */
+export function removeFile(pages: PlanPage[], source: number): PlanPage[] {
+  if (!pages.some((p) => !p.blank && p.source !== source)) return pages;
+  return remove(pages, new Set(pages.filter((p) => !p.blank && p.source === source).map((p) => p.id)));
+}
+
+/** How many pages of each file are in the plan (blank pages belong to no file). */
+export function countsBySource(pages: PlanPage[], fileCount: number): number[] {
+  const counts = Array<number>(fileCount).fill(0);
+  for (const p of pages) if (!p.blank) counts[p.source] += 1;
+  return counts;
+}
+
+/**
+ * Inserts a blank page of `size` points after the last chosen page, or at the end when nothing
+ * is chosen. Returns the new list and the next free id.
+ */
+export function insertBlank(pages: PlanPage[], ids: ReadonlySet<number>, size: [number, number], nextId: number): { pages: PlanPage[]; nextId: number } {
+  const blank: PlanPage = { id: nextId, source: 0, page: 0, turn: 0, blank: size };
+  let last = -1;
+  pages.forEach((p, i) => {
+    if (ids.has(p.id)) last = i;
+  });
+  const at = last === -1 ? pages.length : last + 1;
+  return { pages: [...pages.slice(0, at), blank, ...pages.slice(at)], nextId: nextId + 1 };
+}
+
+/** The chosen pages in display order, for saving on their own. */
+export function chosenPages(pages: PlanPage[], ids: ReadonlySet<number>): PlanPage[] {
+  return pages.filter((p) => ids.has(p.id));
 }
 
 /** Whether the plan differs from simply "every page of the file, upright, in order". */

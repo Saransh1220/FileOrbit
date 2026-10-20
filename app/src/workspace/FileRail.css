@@ -1,0 +1,133 @@
+.rail {
+  flex: none;
+  box-sizing: border-box;
+  width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 14px;
+  border-right: 1px solid var(--m-line);
+  overflow-y: auto;
+}
+
+.rail h2 {
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--m-line);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--m-muted);
+}
+
+.rail ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rail li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  border-bottom: 1px solid var(--m-line);
+}
+
+.rail .tag {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--tag-color);
+}
+
+.rail .info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.rail .name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.rail .count {
+  font-size: 12px;
+  color: var(--m-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.rail .remove {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: var(--m-radius);
+  color: var(--m-faint);
+  background: none;
+  cursor: pointer;
+}
+
+.rail .remove:hover {
+  color: var(--m-danger);
+  background: color-mix(in srgb, var(--m-danger) 12%, transparent);
+}
+
+.rail .remove svg {
+  width: 14px;
+  height: 14px;
+}
+
+.rail .add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px dashed var(--m-line);
+  border-radius: var(--m-radius);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--m-fg);
+  background: none;
+  cursor: pointer;
+}
+
+.rail .add:hover {
+  border-color: var(--m-accent);
+  color: var(--m-accent);
+}
+
+.rail .add svg {
+  width: 16px;
+  height: 16px;
+}
+
+.rail .hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--m-faint);
+  text-align: center;
+}
+
+.rail button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--m-accent) 55%, transparent);
+  outline-offset: 2px;
+}
+
+[data-design="brutal"] .rail .add:hover {
+  color: var(--m-fg);
+  border-color: var(--m-fg);
+  background: var(--m-accent);
+}

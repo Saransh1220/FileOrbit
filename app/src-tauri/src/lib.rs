@@ -60,6 +60,7 @@ fn reveal_in_file_manager(path: String) {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .manage(status::HookStatus::default())
         .manage(design::CurrentDesign::default())
         .manage(manager::InstallLock::default())

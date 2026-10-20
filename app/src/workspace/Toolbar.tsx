@@ -17,6 +17,7 @@ interface ToolbarProps {
   onRotateLeft: () => void;
   onRotateRight: () => void;
   onDuplicate: () => void;
+  onInsertBlank: () => void;
   onRemove: () => void;
   onCellChange: (cell: number) => void;
 }
@@ -41,6 +42,7 @@ export function Toolbar(props: ToolbarProps) {
         <Tool icon="rotate-left" label="Rotate left (Shift+R)" disabled={!hasSelection} onClick={props.onRotateLeft} />
         <Tool icon="rotate-right" label="Rotate right (R)" disabled={!hasSelection} onClick={props.onRotateRight} />
         <Tool icon="duplicate" label="Duplicate (Ctrl+D)" disabled={!hasSelection} onClick={props.onDuplicate} />
+        <Tool icon="blank-page" label="Insert a blank page after the chosen page" disabled={false} onClick={props.onInsertBlank} />
         <Tool icon="trash" label="Delete (Del)" disabled={!hasSelection} onClick={props.onRemove} />
       </div>
       <label className="size">

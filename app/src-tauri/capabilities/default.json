@@ -5,6 +5,7 @@
   "windows": ["main", "overlay", "toast", "workspace"],
   "permissions": [
     "core:default",
-    "core:window:allow-destroy"
+    "core:window:allow-destroy",
+    "dialog:allow-open"
   ]
 }

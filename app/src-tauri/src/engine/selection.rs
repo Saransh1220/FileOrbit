@@ -69,10 +69,9 @@ pub fn targets_for_types(exts: &[String], supported: impl Fn(Engine, &str) -> bo
     }
     wedges.extend(common);
     wedges.truncate(registry::MAX_TARGETS - 1);
-    if let [only] = exts {
-        if only == "pdf" {
-            wedges.push(Target { id: ORGANIZE.to_string(), label: "ORGANIZE".to_string(), tool: true });
-        }
+    // The page editor takes any number of PDFs (several open side by side in one editor).
+    if exts.iter().all(|e| e == "pdf") {
+        wedges.push(Target { id: ORGANIZE.to_string(), label: "ORGANIZE".to_string(), tool: true });
     }
     wedges
 }
@@ -121,17 +120,18 @@ mod tests {
     }
 
     #[test]
-    fn only_a_single_pdf_is_offered_the_page_editor() {
+    fn only_pdfs_are_offered_the_page_editor() {
         let wedges = targets_for_types(&exts(&["pdf"]), |_, _| true);
         let organize = wedges.last().unwrap();
         assert_eq!((organize.id.as_str(), organize.tool), (ORGANIZE, true));
-        assert!(!ids(&["pdf", "pdf"]).contains(&ORGANIZE.to_string()));
+        assert!(ids(&["pdf", "pdf"]).contains(&ORGANIZE.to_string()));
+        assert!(!ids(&["pdf", "png"]).contains(&ORGANIZE.to_string()));
         assert!(!ids(&["png"]).contains(&ORGANIZE.to_string()));
     }
 
     #[test]
     fn several_pdfs_get_merge_first_then_what_they_share() {
-        assert_eq!(ids(&["pdf", "pdf"]), vec!["merge", "png", "jpg", "txt", "docx", "odt"]);
+        assert_eq!(ids(&["pdf", "pdf"]), vec!["merge", "png", "jpg", "txt", "docx", "odt", "organize"]);
     }
 
     #[test]
@@ -175,7 +175,8 @@ mod tests {
     fn the_tool_wedge_is_marked_and_conversions_are_not() {
         let wedges = targets_for_types(&exts(&["pdf", "pdf"]), |_, _| true);
         assert!(wedges[0].tool);
-        assert!(wedges.iter().skip(1).all(|t| !t.tool));
+        let tools: Vec<&str> = wedges.iter().filter(|t| t.tool).map(|t| t.id.as_str()).collect();
+        assert_eq!(tools, vec!["merge", "organize"], "conversions are never marked as tools");
     }
 
     #[test]

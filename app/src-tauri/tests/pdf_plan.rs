@@ -2,7 +2,7 @@
 //! Skips (passes) when the "PDF tools" pack is not installed.
 
 use app_lib::engine::binaries::{self, Tool};
-use app_lib::engine::pdf::plan::{save_next_to_first, PageRef};
+use app_lib::engine::pdf::plan::{save_next_to_first as save, save_part, PageRef, SaveKind};
 use app_lib::engine::pdf::thumbs;
 use app_lib::engine::pdf::Library;
 use pdfium_render::prelude::*;
@@ -50,7 +50,7 @@ fn page_texts(path: &Path) -> Vec<String> {
 }
 
 fn page(source: usize, page: u32, turn: u16) -> PageRef {
-    PageRef { source, page, turn }
+    PageRef { source, page, turn, blank: None }
 }
 
 #[test]
@@ -63,7 +63,7 @@ fn pages_can_be_reordered_dropped_and_repeated() {
     make_pdf(&dir.join("a.pdf"), "A", 4);
     let library = Library::load().unwrap();
     let plan = [page(0, 3, 0), page(0, 0, 0), page(0, 0, 0), page(0, 2, 0)];
-    let (out, count) = save_next_to_first(library, &[dir.join("a.pdf")], &plan).unwrap();
+    let (out, count) = save(library, &[dir.join("a.pdf")], &plan, SaveKind::Edited).unwrap();
     assert_eq!(out, dir.join("a (edited).pdf"));
     assert_eq!(count, 4);
     assert_eq!(page_texts(&out), vec!["A4", "A1", "A1", "A3"]);
@@ -78,9 +78,9 @@ fn rotation_is_added_to_what_the_page_already_has() {
     let dir = scratch("rotate");
     make_pdf(&dir.join("a.pdf"), "A", 2);
     let library = Library::load().unwrap();
-    let (once, _) = save_next_to_first(library, &[dir.join("a.pdf")], &[page(0, 0, 90), page(0, 1, 0)]).unwrap();
+    let (once, _) = save(library, &[dir.join("a.pdf")], &[page(0, 0, 90), page(0, 1, 0)], SaveKind::Edited).unwrap();
     // Turn the already turned page by another quarter: 180 in all.
-    let (twice, _) = save_next_to_first(library, &[once.clone()], &[page(0, 0, 90), page(0, 1, 270)]).unwrap();
+    let (twice, _) = save(library, &[once.clone()], &[page(0, 0, 90), page(0, 1, 270)], SaveKind::Edited).unwrap();
 
     let rotations = |path: &Path| -> Vec<f32> {
         let document = library.open(path, None).unwrap();
@@ -103,10 +103,10 @@ fn a_bad_plan_writes_nothing() {
     let dir = scratch("bad");
     make_pdf(&dir.join("a.pdf"), "A", 2);
     let library = Library::load().unwrap();
-    let error = save_next_to_first(library, &[dir.join("a.pdf")], &[page(0, 5, 0)]).unwrap_err();
+    let error = save(library, &[dir.join("a.pdf")], &[page(0, 5, 0)], SaveKind::Edited).unwrap_err();
     assert!(error.contains("page 1"), "{error}");
     assert!(!dir.join("a (edited).pdf").exists(), "no half-written result");
-    assert!(save_next_to_first(library, &[dir.join("a.pdf")], &[]).is_err());
+    assert!(save(library, &[dir.join("a.pdf")], &[], SaveKind::Edited).is_err());
 }
 
 #[test]
@@ -120,7 +120,7 @@ fn pages_from_two_files_can_be_woven_together() {
     make_pdf(&dir.join("b.pdf"), "B", 2);
     let library = Library::load().unwrap();
     let plan = [page(0, 0, 0), page(1, 0, 0), page(0, 1, 0), page(1, 1, 0)];
-    let (out, _) = save_next_to_first(library, &[dir.join("a.pdf"), dir.join("b.pdf")], &plan).unwrap();
+    let (out, _) = save(library, &[dir.join("a.pdf"), dir.join("b.pdf")], &plan, SaveKind::Edited).unwrap();
     assert_eq!(page_texts(&out), vec!["A1", "B1", "A2", "B2"]);
 }
 
@@ -143,4 +143,43 @@ fn page_shapes_and_thumbnails_come_back() {
     assert_eq!(picture.width(), 200);
     assert!(picture.height() > 250, "keeps the page's shape");
     assert!(thumbs::thumbnail(library, &dir.join("a.pdf"), 9, 200).is_err());
+}
+
+#[test]
+fn a_blank_page_is_inserted_with_the_asked_size_and_a_selection_can_be_extracted() {
+    let _turn = turn();
+    if missing() {
+        return;
+    }
+    let dir = scratch("blank");
+    make_pdf(&dir.join("a.pdf"), "A", 3);
+    let library = Library::load().unwrap();
+    let blank = PageRef { source: 0, page: 0, turn: 0, blank: Some([300.0, 200.0]) };
+    let plan = [page(0, 0, 0), blank, page(0, 2, 0)];
+    let (out, count) = save(library, &[dir.join("a.pdf")], &plan, SaveKind::Edited).unwrap();
+    assert_eq!(count, 3);
+    let document = library.open(&out, None).unwrap();
+    let middle = document.pages().get(1).unwrap();
+    assert!((middle.width().value - 300.0).abs() < 0.5 && (middle.height().value - 200.0).abs() < 0.5);
+    assert_eq!(page_texts(&out), vec!["A1", "", "A3"]);
+
+    let (picked, _) = save(library, &[dir.join("a.pdf")], &[page(0, 1, 0)], SaveKind::Extract).unwrap();
+    assert_eq!(picked, dir.join("a (extract).pdf"));
+    assert_eq!(page_texts(&picked), vec!["A2"]);
+}
+
+#[test]
+fn split_parts_are_numbered_next_to_the_original() {
+    let _turn = turn();
+    if missing() {
+        return;
+    }
+    let dir = scratch("parts");
+    make_pdf(&dir.join("a.pdf"), "A", 4);
+    let library = Library::load().unwrap();
+    let inputs = [dir.join("a.pdf")];
+    let (one, _) = save_part(library, &inputs, &[page(0, 0, 0), page(0, 1, 0)], 1).unwrap();
+    let (two, _) = save_part(library, &inputs, &[page(0, 2, 0), page(0, 3, 0)], 2).unwrap();
+    assert_eq!((one.file_name().unwrap().to_str().unwrap(), two.file_name().unwrap().to_str().unwrap()), ("a (part 1).pdf", "a (part 2).pdf"));
+    assert_eq!(page_texts(&two), vec!["A3", "A4"]);
 }

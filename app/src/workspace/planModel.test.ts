@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canRedo, canUndo, commit, duplicate, isEdited, move, pagesOfFile, redo, remove, rotate, startHistory, toSavedPages, undo } from "./planModel";
+import { append, canRedo, canUndo, chosenPages, commit, countsBySource, duplicate, insertBlank, isEdited, move, pagesOfFile, redo, remove, removeFile, rotate, startHistory, toSavedPages, undo } from "./planModel";
 import type { PlanPage } from "./types";
 
 const shape = { width: 595, height: 842 };
@@ -120,5 +120,62 @@ describe("saving", () => {
     expect(isEdited(rotate(original, set(0), 90), original)).toBe(true);
     expect(isEdited(remove(original, set(2)), original)).toBe(true);
     expect(isEdited(move(original, set(0), 2), original)).toBe(true);
+  });
+});
+
+describe("several files", () => {
+  const two = () => append(pages(2), pagesOfFile(1, [shape, shape, shape], 2));
+
+  it("adds the pages of a new file at the end", () => {
+    const list = two();
+    expect(list.map((p) => [p.source, p.page])).toEqual([[0, 0], [0, 1], [1, 0], [1, 1], [1, 2]]);
+    expect(countsBySource(list, 2)).toEqual([2, 3]);
+  });
+
+  it("adding nothing keeps the same list", () => {
+    const list = pages(2);
+    expect(append(list, [])).toBe(list);
+  });
+
+  it("removes one file's pages and keeps the other's", () => {
+    expect(removeFile(two(), 1).map((p) => p.source)).toEqual([0, 0]);
+  });
+
+  it("will not remove the only file", () => {
+    const list = pages(2);
+    expect(removeFile(list, 0)).toBe(list);
+  });
+
+  it("removes pages of a file even after they were reordered", () => {
+    const moved = move(two(), new Set([3]), 0);
+    expect(removeFile(moved, 1).every((p) => p.source === 0)).toBe(true);
+  });
+});
+
+describe("blank pages and extracting", () => {
+  it("inserts a blank page after the last chosen page", () => {
+    const made = insertBlank(pages(3), set(0, 1), [300, 400], 3);
+    expect(made.pages.map((p) => (p.blank ? "blank" : p.page))).toEqual([0, 1, "blank", 2]);
+    expect(made.nextId).toBe(4);
+  });
+
+  it("puts a blank page at the end when nothing is chosen", () => {
+    const made = insertBlank(pages(2), set(), [300, 400], 2);
+    expect(made.pages[2].blank).toEqual([300, 400]);
+  });
+
+  it("a blank page does not count as a file's page", () => {
+    const made = insertBlank(pages(2), set(), [300, 400], 2);
+    expect(countsBySource(made.pages, 1)).toEqual([2]);
+    expect(removeFile(made.pages, 0)).toBe(made.pages);
+  });
+
+  it("saves blank pages with their size", () => {
+    const made = insertBlank(pages(1), set(), [300, 400], 1);
+    expect(toSavedPages(made.pages)[1]).toEqual({ source: 0, page: 0, turn: 0, blank: [300, 400] });
+  });
+
+  it("extracts the chosen pages in display order", () => {
+    expect(ids(chosenPages(pages(5), set(3, 1)))).toEqual([1, 3]);
   });
 });

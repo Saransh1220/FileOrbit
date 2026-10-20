@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { BottomBar } from "./BottomBar";
+import { FileRail } from "./FileRail";
 import { PageGrid } from "./PageGrid";
+import { SplitPanel } from "./SplitPanel";
 import { Toolbar } from "./Toolbar";
 import type { WorkspaceViewProps } from "./workspaceProps";
 import "./WorkspaceView.css";
@@ -9,6 +12,7 @@ const titleOf = (names: string[]) => (names.length === 1 ? names[0] : `${names.l
 /** The page editor, all of it, driven by props so it can be judged in a browser without the app. */
 export function WorkspaceView(props: WorkspaceViewProps) {
   const { files, pages, selected } = props;
+  const [splitting, setSplitting] = useState(false);
   const chosen = pages.filter((p) => selected.has(p.id)).map((p) => p.id);
   const ready = !props.loading && !props.problem && files.length > 0;
 
@@ -25,6 +29,7 @@ export function WorkspaceView(props: WorkspaceViewProps) {
         onRotateLeft={() => props.onRotate(-90, chosen)}
         onRotateRight={() => props.onRotate(90, chosen)}
         onDuplicate={() => props.onDuplicate(chosen)}
+        onInsertBlank={() => props.onInsertBlank(chosen)}
         onRemove={() => props.onRemove(chosen)}
         onCellChange={props.onCellChange}
       />
@@ -32,7 +37,9 @@ export function WorkspaceView(props: WorkspaceViewProps) {
       {props.loading && <p className="notice">Opening the PDF…</p>}
       {props.problem && <p className="notice problem">{props.problem}</p>}
       {ready && (
-        <PageGrid
+        <div className="body">
+          <FileRail files={files} counts={props.fileCounts} onAdd={props.onAddFiles} onRemove={props.onRemoveFile} />
+          <PageGrid
           files={files}
           pages={pages}
           selected={selected}
@@ -44,10 +51,32 @@ export function WorkspaceView(props: WorkspaceViewProps) {
           onMove={props.onMove}
           onRotate={props.onRotate}
           onRemove={props.onRemove}
-        />
+          />
+          {props.dropping && <div className="drop-hint">Drop PDFs to add their pages</div>}
+        </div>
       )}
 
-      <BottomBar total={pages.length} selected={chosen.length} edited={props.edited} status={props.status} onSave={props.onSave} onShowSaved={props.onShowSaved} />
+      {splitting && ready && (
+        <SplitPanel
+          total={pages.length}
+          onClose={() => setSplitting(false)}
+          onSplit={(groups) => {
+            setSplitting(false);
+            props.onSplit(groups);
+          }}
+        />
+      )}
+      <BottomBar
+        total={pages.length}
+        selected={chosen.length}
+        edited={props.edited}
+        status={props.status}
+        onSave={props.onSave}
+        onExtract={() => props.onExtract(chosen)}
+        splitOpen={splitting}
+        onToggleSplit={() => setSplitting((open) => !open)}
+        onShowSaved={props.onShowSaved}
+      />
     </div>
   );
 }

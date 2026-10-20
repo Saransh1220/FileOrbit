@@ -21,10 +21,15 @@ export interface PlanPage {
   page: number;
   /** Extra clockwise turn: 0, 90, 180 or 270. */
   turn: number;
+  /** An inserted empty page of this width and height in points; `source` and `page` mean nothing for it. */
+  blank?: [number, number];
 }
 
 /** What `workspace_save` receives for each page. */
-export type SavedPage = Pick<PlanPage, "source" | "page" | "turn">;
+export type SavedPage = Pick<PlanPage, "source" | "page" | "turn" | "blank">;
+
+/** What a saved file is called: all pages ("edited") or a selection on its own ("extract"). */
+export type SaveKind = "edited" | "extract";
 
 /** Reply of `workspace_save`. */
 export interface Saved {

@@ -4,9 +4,9 @@ import { limitedLoader, thumbWidth } from "./thumbnails";
 /** A fetcher whose results are released by hand, so the test controls the timing. */
 function manualFetcher() {
   const calls: Array<{ key: string; finish: (url: string) => void; fail: (error: Error) => void }> = [];
-  const fetchOne = (source: number, page: number, width: number) =>
+  const fetchOne = (path: string, page: number, width: number) =>
     new Promise<string>((resolve, reject) => {
-      calls.push({ key: `${source}:${page}:${width}`, finish: resolve, fail: reject });
+      calls.push({ key: `${path}:${page}:${width}`, finish: resolve, fail: reject });
     });
   return { calls, fetchOne };
 }
@@ -17,13 +17,13 @@ describe("the thumbnail loader", () => {
   it("runs only as many fetches at once as allowed, then continues in order", async () => {
     const { calls, fetchOne } = manualFetcher();
     const load = limitedLoader(fetchOne, 2);
-    const results = [0, 1, 2, 3].map((page) => load(0, page, 160));
-    expect(calls.map((c) => c.key)).toEqual(["0:0:160", "0:1:160"]);
+    const results = [0, 1, 2, 3].map((page) => load("a.pdf", page, 160));
+    expect(calls.map((c) => c.key)).toEqual(["a.pdf:0:160", "a.pdf:1:160"]);
 
     calls[0].finish("a");
     await flush();
     await flush();
-    expect(calls.map((c) => c.key)).toEqual(["0:0:160", "0:1:160", "0:2:160"]);
+    expect(calls.map((c) => c.key)).toEqual(["a.pdf:0:160", "a.pdf:1:160", "a.pdf:2:160"]);
     calls[1].finish("b");
     calls[2].finish("c");
     await flush();
@@ -35,8 +35,8 @@ describe("the thumbnail loader", () => {
   it("asks for the same picture only once", async () => {
     const { calls, fetchOne } = manualFetcher();
     const load = limitedLoader(fetchOne, 3);
-    const first = load(0, 4, 160);
-    const second = load(0, 4, 160);
+    const first = load("a.pdf", 4, 160);
+    const second = load("a.pdf", 4, 160);
     expect(first).toBe(second);
     expect(calls).toHaveLength(1);
     calls[0].finish("x");
@@ -46,17 +46,17 @@ describe("the thumbnail loader", () => {
   it("treats another width or file as another picture", () => {
     const { calls, fetchOne } = manualFetcher();
     const load = limitedLoader(fetchOne, 5);
-    void load(0, 0, 160);
-    void load(0, 0, 240);
-    void load(1, 0, 160);
+    void load("a.pdf", 0, 160);
+    void load("a.pdf", 0, 240);
+    void load("b.pdf", 0, 160);
     expect(calls).toHaveLength(3);
   });
 
   it("lets a failed picture be asked for again, and keeps going", async () => {
     const { calls, fetchOne } = manualFetcher();
     const load = limitedLoader(fetchOne, 1);
-    const bad = load(0, 0, 160);
-    const next = load(0, 1, 160);
+    const bad = load("a.pdf", 0, 160);
+    const next = load("a.pdf", 1, 160);
     calls[0].fail(new Error("no"));
     await expect(bad).rejects.toThrow("no");
     await flush();
@@ -66,7 +66,7 @@ describe("the thumbnail loader", () => {
     expect(await next).toBe("ok");
     await flush();
     await flush();
-    void load(0, 0, 160);
+    void load("a.pdf", 0, 160);
     expect(calls).toHaveLength(3);
   });
 });

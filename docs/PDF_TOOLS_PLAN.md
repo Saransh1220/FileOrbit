@@ -1,6 +1,6 @@
 # PDF tools plan
 
-Status: **phases 0 to 3 are built** (phase 3 awaits a hand test of the in-app flow); phases 4 to 6 are still plans. Written after the Windows port, themes and manager window.
+Status: **phases 0 to 4 are built** (phases 3 and 4 await a hand test of parts of the in-app flow); phases 5 and 6 are still plans. Written after the Windows port, themes and manager window.
 
 Decisions taken: PDFium as the single engine; an "Organize" wedge plus drop on the hub; first release is phases 0 to 3; output next to the source with a new name; PDF to Word included with an honest "layout may differ" label.
 
@@ -187,6 +187,22 @@ Built; the engine, model and browser design are tested, the in-app flow is waiti
 Found on the way: PDFium garbled page text when several tests used it at the same time (a page read back as "ÿÿ"). The editor's commands take turns for that reason, and the PDF test files do too. Conversions started from the ring (`engines/pdfium.rs`) do not take turns yet; two PDF conversions at the very same moment could in theory hit it. Worth a process-wide lock inside `Library`.
 
 Not yet (phase 4 and later): several files in one editor with a file rail, insert blank page, extract and split, page ranges, large preview with Space, dropping files into the window, password prompt (a protected file shows its message instead), "Organize all" wedge for several PDFs.
+
+## 5f. Phase 4 result (2026-10-20): several files in one editor
+
+Built; engine and model are tested, the in-app flow (file dialog, dropping PDFs on the window, split) waits for a hand test. Browser-checked: the rail, adding a file, the split panel and its preview, blank page, extract.
+
+| Piece | What it does |
+|---|---|
+| Ring | Several PDFs now also get **Organize** (after Merge and the shared conversions); it opens one editor with every file loaded in selection order. Pictures do not get it. |
+| File rail | Left column: each open file with a color dot (the same dot sits under each page's number when two or more files are open), "N pages" (or "N of M" once some were deleted), a button to take a file out (undo brings it back), **Add PDFs** (system file chooser) and "or drop PDFs on this window". Dropping PDFs on the editor adds their pages at the end. |
+| Blank page | Toolbar button inserts a blank page after the last chosen page (or at the end), sized like its neighbour. |
+| Extract | Saves the chosen pages, in display order, as `<name> (extract).pdf`. |
+| Split | Panel above the bottom bar: every N pages, or ranges typed as `1-3, 5, 8-` with a live preview ("3 files: pages 1-3 · page 5 · ..."), each part saved as `<name> (part N).pdf`. Cuts the pages as they are in the editor now (after reordering and deleting). |
+| Engine | `PageRef` has an optional `blank` size; `SaveKind` (edited or extract) and part numbers decide the file name; plans may mix pages from several files and blank pages. New dependency: `tauri-plugin-dialog` (file chooser). |
+| Tests | 7 real-PDF plan tests (blank size, extract name, part names added); 58 frontend tests (ranges, every N, adding and removing files, blank pages, extract order, loader keyed by file). |
+
+Not done from the phase 4 plan: dragging a file in the rail to reorder whole files (move its pages in the grid instead), selecting by a range box, "insert pages from another file at an exact position" (add the file, then drag its pages), a large preview with Space, password prompt, pictures in the editor.
 
 ## 6. Delivery in phases
 

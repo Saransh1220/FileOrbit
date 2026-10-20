@@ -36,3 +36,47 @@
   color: var(--m-danger);
   overflow-wrap: anywhere;
 }
+
+/* The rail on the left, the pages filling the rest. */
+.workspace .body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+/* A color per open file, shared by the rail dots and the dots under each page. */
+.workspace {
+  --tag-0: oklch(0.62 0.15 255);
+  --tag-1: oklch(0.68 0.15 150);
+  --tag-2: oklch(0.7 0.16 55);
+  --tag-3: oklch(0.62 0.17 20);
+  --tag-4: oklch(0.6 0.16 310);
+  --tag-5: oklch(0.68 0.12 200);
+}
+
+.workspace [data-tag="0"] { --tag-color: var(--tag-0); }
+.workspace [data-tag="1"] { --tag-color: var(--tag-1); }
+.workspace [data-tag="2"] { --tag-color: var(--tag-2); }
+.workspace [data-tag="3"] { --tag-color: var(--tag-3); }
+.workspace [data-tag="4"] { --tag-color: var(--tag-4); }
+.workspace [data-tag="5"] { --tag-color: var(--tag-5); }
+
+/* Shown while PDFs are dragged over the window. */
+.workspace .drop-hint {
+  position: absolute;
+  inset: 10px;
+  display: grid;
+  place-items: center;
+  border: 2px dashed var(--m-accent);
+  border-radius: calc(var(--m-radius) + 4px);
+  font-weight: 650;
+  color: var(--m-accent);
+  background: color-mix(in srgb, var(--m-bg) 82%, transparent);
+  pointer-events: none;
+}
+
+[data-design="brutal"] .workspace .drop-hint {
+  color: var(--m-fg);
+  border-color: var(--m-fg);
+}

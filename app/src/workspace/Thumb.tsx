@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import type { ThumbFetcher } from "./thumbnails";
 
 interface ThumbProps {
-  source: number;
+  /** The PDF the page comes from. */
+  path: string;
   page: number;
   /** Width to request, in pixels. */
   width: number;
@@ -18,7 +19,7 @@ interface ThumbProps {
  * file does not draw every page at once, and it keeps showing the old picture while a new
  * size loads.
  */
-export function Thumb({ source, page, width, load, pictureWidth, pictureHeight, turn }: ThumbProps) {
+export function Thumb({ path, page, width, load, pictureWidth, pictureHeight, turn }: ThumbProps) {
   const holder = useRef<HTMLDivElement>(null);
   const [near, setNear] = useState(false);
   const [url, setUrl] = useState<string | null>(null);
@@ -43,7 +44,7 @@ export function Thumb({ source, page, width, load, pictureWidth, pictureHeight, 
   useEffect(() => {
     if (!near) return;
     let current = true;
-    load(source, page, width).then(
+    load(path, page, width).then(
       (next) => {
         if (current) {
           setUrl(next);
@@ -55,7 +56,7 @@ export function Thumb({ source, page, width, load, pictureWidth, pictureHeight, 
     return () => {
       current = false;
     };
-  }, [near, load, source, page, width]);
+  }, [near, load, path, page, width]);
 
   return (
     <div ref={holder} className="picture-holder">

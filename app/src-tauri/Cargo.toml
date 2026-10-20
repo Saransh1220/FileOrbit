@@ -27,6 +27,7 @@ radial-packs = { version = "0.1.0", path = "../../crates/radial-packs", default-
 pdfium-render = "0.9.4"
 # Picture formats read when making a PDF and written when drawing pages.
 image = { version = "0.25", default-features = false, features = ["png", "jpeg", "gif", "webp", "tiff", "bmp"] }
+tauri-plugin-dialog = "2.8.3"
 
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration

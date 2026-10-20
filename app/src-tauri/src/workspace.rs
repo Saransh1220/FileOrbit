@@ -2,7 +2,7 @@
 //! read pages and save the result. The editing itself happens in the window, on a
 //! list of page references; see `engine::pdf::plan`.
 
-use crate::engine::pdf::plan::{self, PageRef};
+use crate::engine::pdf::plan::{self, PageRef, SaveKind};
 use crate::engine::pdf::thumbs::{self, PageShape};
 use crate::engine::pdf::Library;
 use serde::Serialize;
@@ -100,12 +100,15 @@ pub struct Saved {
     pages: u32,
 }
 
-/// Writes the planned pages to a new PDF next to the first file.
+/// Writes the planned pages to a new PDF next to the first file (all pages, or an extracted selection).
 #[tauri::command(async)]
-pub fn workspace_save(files: Vec<String>, pages: Vec<PageRef>) -> Result<Saved, String> {
+pub fn workspace_save(files: Vec<String>, pages: Vec<PageRef>, kind: SaveKind, part: Option<u32>) -> Result<Saved, String> {
     let _turn = take_turn();
     let inputs: Vec<PathBuf> = files.into_iter().map(PathBuf::from).collect();
     let library = Library::load()?;
-    let (path, count) = plan::save_next_to_first(library, &inputs, &pages)?;
+    let (path, count) = match part {
+        Some(number) => plan::save_part(library, &inputs, &pages, number)?,
+        None => plan::save_next_to_first(library, &inputs, &pages, kind)?,
+    };
     Ok(Saved { path: path.to_string_lossy().into_owned(), pages: count })
 }

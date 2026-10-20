@@ -8,6 +8,11 @@ const PATHS = {
   trash: "M4 7h16 M10 11v6 M14 11v6 M6 7l1 13h10l1-13 M9 7V4h6v3",
   save: "M12 4v11 M7 10l5 5 5-5 M5 20h14",
   check: "m5 12 5 5 9-10",
+  plus: "M12 5v14 M5 12h14",
+  "blank-page": "M7 3h7l5 5v13H7z M14 3v5h5 M13 12v6 M10 15h6",
+  extract: "M4 5h9v9H4z M9 9h11v11H9z",
+  scissors: "M6 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M20 4 8.1 15.9 M14.5 14.5 20 20 M8.1 8.1 12 12",
+  close: "M6 6l12 12 M18 6 6 18",
   folder: "M3 7a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z",
 } as const;
 
