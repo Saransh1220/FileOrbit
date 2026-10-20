@@ -1,6 +1,8 @@
 # PDF tools plan
 
-Status: **plan only, nothing built yet.** Written 2026-10-21 after the Windows port, themes and manager window.
+Status: **phases 0 and 1 are built** (2026-10-21); phases 2 to 6 are still plans. Written after the Windows port, themes and manager window.
+
+Decisions taken: PDFium as the single engine; an "Organize" wedge plus drop on the hub; first release is phases 0 to 3; output next to the source with a new name; PDF to Word included with an honest "layout may differ" label.
 
 Goal: PDFs become first-class. You can convert them to other formats, and you can open them in a page editor to reorder, delete, rotate and merge, before anything is saved. Merging several PDFs and combining images into a PDF come from the same editor.
 
@@ -136,6 +138,22 @@ PDFium works as a pack. Measured on Windows 11 (debug build):
 | Create, save, reopen a PDF; render an A4 page to 800 px | works; render 2.4 ms; the image is not blank |
 | Damaged file | clear message ("is damaged or is not a PDF file") |
 | macOS | **Not tried.** The release app must be allowed to load a library it did not ship: a notarized app with the hardened runtime refuses unsigned libraries unless the entitlement `com.apple.security.cs.disable-library-validation` is set (Tauri: `bundle.macOS.entitlements`). Check this on a Mac before the first release. |
+
+## 5c. Phase 1 result (2026-10-21)
+
+Built and tested against the real engines on Windows:
+
+| Conversion | Result |
+|---|---|
+| PDF to PNG or JPG | One page: one file. Several pages: a folder `name pages/` with `name pages - page 01.png`, `...02...`; pages are drawn at 150 dpi, capped at 7000 px on the long side; JPG at quality 90 |
+| PDF to TXT | All pages, separated by a form feed; a PDF with no text (a scan) fails with an explanation instead of writing an empty file |
+| PDF to DOCX or ODT | Through LibreOffice's PDF import (needs the Documents pack); the page text is in the document |
+| Picture to PDF | One page with the picture's own proportions and an A4-length long side |
+| Damaged PDF | The error names the file |
+
+Also built: several dropped files are one job (one toast: "File 2 of 5", then "Converted 5 files"), PDFium is loaded once and shared (it can only be bound once per process; this bug was caught by the tests), and the runner returns the path actually written.
+
+Not yet: the ring does not offer an "Organize" wedge; multi-file selections still use the first file's type; page-by-page progress inside one large PDF; combining several pictures into one PDF (phase 2).
 
 ## 6. Delivery in phases
 
