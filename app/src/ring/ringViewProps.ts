@@ -6,6 +6,8 @@ export interface RingViewProps {
   fileName: string;
   hovered: number | null;
   confirmed: number | null;
+  /** A drag is over the center disc, where dropping opens the page editor. */
+  hub?: boolean;
   /** Called when the chosen segment's confirmation animation has played. */
   onConfirmed: () => void;
 }

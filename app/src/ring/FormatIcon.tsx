@@ -62,6 +62,15 @@ const PATHS: Record<IconKind, ReactNode> = {
       <path d="M8 9.5v4 M6 11.5h4" />
     </>
   ),
+  // A small grid of pages: the page editor.
+  organize: (
+    <>
+      <rect x="3.5" y="3.5" width="7" height="9" rx="1.5" />
+      <rect x="13.5" y="3.5" width="7" height="9" rx="1.5" />
+      <rect x="3.5" y="15" width="7" height="5.5" rx="1.5" />
+      <rect x="13.5" y="15" width="7" height="5.5" rx="1.5" />
+    </>
+  ),
   book: (
     <>
       <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H19v15H6.5A2.5 2.5 0 0 0 4 20.5z" />

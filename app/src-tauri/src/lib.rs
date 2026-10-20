@@ -15,6 +15,7 @@ mod settings;
 mod status;
 mod toast;
 mod tray;
+mod workspace;
 
 use std::path::PathBuf;
 use tauri::{AppHandle, Manager, WindowEvent};
@@ -61,6 +62,7 @@ pub fn run() {
         .manage(design::CurrentDesign::default())
         .manage(manager::InstallLock::default())
         .manage(engine::pending::PendingJobs::default())
+        .manage(workspace::WorkspaceFiles::default())
         .invoke_handler(tauri::generate_handler![
             hide_overlay,
             hide_toast,
@@ -76,12 +78,17 @@ pub fn run() {
             log_event,
             reveal_in_file_manager,
             start_conversion,
-            status::get_hook_status
+            status::get_hook_status,
+            workspace::workspace_files,
+            workspace::workspace_open,
+            workspace::workspace_save,
+            workspace::workspace_thumbnail
         ])
         .on_window_event(|window, event| {
             // The overlay and toast are created once and reused; closing one
             // (Alt+F4) must hide it, never destroy it.
-            if window.label() != "main" {
+            // The page editor is the exception: closing it really closes it.
+            if window.label() != "main" && window.label() != "workspace" {
                 if let WindowEvent::CloseRequested { api, .. } = event {
                     api.prevent_close();
                     let _ = window.hide();

@@ -4,8 +4,10 @@
 
 pub mod merge;
 pub mod pictures;
+pub mod plan;
 pub mod render;
 pub mod text;
+pub mod thumbs;
 
 use super::binaries::{self, Tool};
 use pdfium_render::prelude::*;

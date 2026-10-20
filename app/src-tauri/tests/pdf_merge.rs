@@ -7,6 +7,12 @@ use app_lib::engine::pdf::Library;
 use pdfium_render::prelude::*;
 use std::path::{Path, PathBuf};
 
+/// PDFium is not safe to drive from several threads at once, so these tests take turns.
+fn turn() -> std::sync::MutexGuard<'static, ()> {
+    static TURN: std::sync::Mutex<()> = std::sync::Mutex::new(());
+    TURN.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
+}
+
 fn scratch(name: &str) -> PathBuf {
     let dir = std::env::temp_dir().join(format!("radial-merge-{}-{name}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
@@ -49,6 +55,7 @@ fn picture(path: &Path, width: u32, height: u32) {
 
 #[test]
 fn three_pdfs_merge_with_every_page_in_order() {
+    let _turn = turn();
     if missing() {
         return;
     }
@@ -65,6 +72,7 @@ fn three_pdfs_merge_with_every_page_in_order() {
 
 #[test]
 fn the_order_given_is_the_order_used_not_alphabetical() {
+    let _turn = turn();
     if missing() {
         return;
     }
@@ -77,6 +85,7 @@ fn the_order_given_is_the_order_used_not_alphabetical() {
 
 #[test]
 fn the_originals_are_not_touched_and_a_second_merge_gets_its_own_name() {
+    let _turn = turn();
     if missing() {
         return;
     }
@@ -94,6 +103,7 @@ fn the_originals_are_not_touched_and_a_second_merge_gets_its_own_name() {
 
 #[test]
 fn a_picture_becomes_a_page_between_pdfs() {
+    let _turn = turn();
     if missing() {
         return;
     }
@@ -114,6 +124,7 @@ fn a_picture_becomes_a_page_between_pdfs() {
 
 #[test]
 fn pictures_alone_combine_into_one_pdf_with_a_page_each() {
+    let _turn = turn();
     if missing() {
         return;
     }
@@ -128,6 +139,7 @@ fn pictures_alone_combine_into_one_pdf_with_a_page_each() {
 
 #[test]
 fn a_damaged_file_stops_the_merge_by_name_and_leaves_nothing_behind() {
+    let _turn = turn();
     if missing() {
         return;
     }
@@ -141,6 +153,7 @@ fn a_damaged_file_stops_the_merge_by_name_and_leaves_nothing_behind() {
 
 #[test]
 fn a_file_that_is_not_a_pdf_or_picture_is_refused_by_name() {
+    let _turn = turn();
     if missing() {
         return;
     }
@@ -154,6 +167,7 @@ fn a_file_that_is_not_a_pdf_or_picture_is_refused_by_name() {
 
 #[test]
 fn merging_needs_at_least_two_files() {
+    let _turn = turn();
     if missing() {
         return;
     }
@@ -165,6 +179,7 @@ fn merging_needs_at_least_two_files() {
 
 #[test]
 fn a_file_that_disappeared_is_named() {
+    let _turn = turn();
     if missing() {
         return;
     }

@@ -1,0 +1,33 @@
+/* Per-theme details for the page editor. The colors already come from the --m-* tokens
+   (ManagerSkins.css); this only fixes what a token cannot, such as yellow on yellow. */
+
+/* ---- Brutal: black rules and hard edges; the accent is yellow, so it never carries text ---- */
+[data-design="brutal"] .workspace .page-card.selected {
+  background: color-mix(in srgb, var(--m-accent) 55%, transparent);
+  border-color: var(--m-fg);
+}
+
+[data-design="brutal"] .workspace .sheet {
+  outline: 2px solid var(--m-fg);
+}
+
+[data-design="brutal"] .workspace .bottombar .link {
+  color: var(--m-fg);
+  text-decoration: underline;
+}
+
+[data-design="brutal"] .workspace .toolbar,
+[data-design="brutal"] .workspace .bottombar {
+  border-width: 2px;
+  border-color: var(--m-fg);
+}
+
+[data-design="brutal"] .workspace .insertion,
+[data-design="brutal"] .workspace .drag-chip {
+  background: var(--m-fg);
+  color: var(--m-bg);
+}
+
+[data-design="brutal"] .workspace .size input {
+  accent-color: var(--m-fg);
+}

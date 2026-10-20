@@ -10,6 +10,8 @@ use std::path::{Path, PathBuf};
 
 /// The action id for "make one PDF out of these files".
 pub const MERGE: &str = "merge";
+/// The action id for "open this PDF in the page editor".
+pub const ORGANIZE: &str = "organize";
 
 /// Picture formats that can become a PDF page.
 const PICTURE_EXTS: &[&str] = &["png", "jpg", "gif", "tiff", "bmp", "webp"];
@@ -66,7 +68,12 @@ pub fn targets_for_types(exts: &[String], supported: impl Fn(Engine, &str) -> bo
         wedges.push(merge_wedge(exts));
     }
     wedges.extend(common);
-    wedges.truncate(registry::MAX_TARGETS);
+    wedges.truncate(registry::MAX_TARGETS - 1);
+    if let [only] = exts {
+        if only == "pdf" {
+            wedges.push(Target { id: ORGANIZE.to_string(), label: "ORGANIZE".to_string(), tool: true });
+        }
+    }
     wedges
 }
 
@@ -104,13 +111,22 @@ mod tests {
 
     #[test]
     fn one_file_gets_its_own_conversions() {
-        assert_eq!(ids(&["pdf"]), vec!["png", "jpg", "txt", "docx", "odt"]);
+        assert_eq!(ids(&["pdf"]), vec!["png", "jpg", "txt", "docx", "odt", "organize"]);
         assert!(!ids(&["mp3"]).contains(&"merge".to_string()));
     }
 
     #[test]
     fn a_single_pdf_is_not_offered_a_merge() {
         assert!(!ids(&["pdf"]).contains(&"merge".to_string()));
+    }
+
+    #[test]
+    fn only_a_single_pdf_is_offered_the_page_editor() {
+        let wedges = targets_for_types(&exts(&["pdf"]), |_, _| true);
+        let organize = wedges.last().unwrap();
+        assert_eq!((organize.id.as_str(), organize.tool), (ORGANIZE, true));
+        assert!(!ids(&["pdf", "pdf"]).contains(&ORGANIZE.to_string()));
+        assert!(!ids(&["png"]).contains(&ORGANIZE.to_string()));
     }
 
     #[test]

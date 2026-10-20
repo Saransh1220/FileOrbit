@@ -185,8 +185,8 @@ fn job_base(id: u64, inputs: &[PathBuf], target_id: &str) -> JobUpdate {
 
 /// The first pack any of the files needs and does not have yet.
 fn first_missing_pack(inputs: &[PathBuf], target_id: &str) -> Option<MissingPack> {
-    if target_id == selection::MERGE {
-        // Merging (and combining pictures) is done by the PDF library, whatever the inputs are.
+    if target_id == selection::MERGE || target_id == selection::ORGANIZE {
+        // Merging, combining pictures and the page editor all use the PDF library, whatever the inputs are.
         return binaries::find(Tool::Pdfium).is_err().then(|| MissingPack {
             pack: "pdf",
             title: radial_packs::catalog::pack("pdf").map(|p| p.title).unwrap_or("PDF tools").to_string(),
@@ -228,6 +228,11 @@ fn run(app: AppHandle, id: u64, inputs: Vec<PathBuf>, target_id: String) {
         return;
     }
 
+    if target_id == selection::ORGANIZE {
+        // The editor is its own window; there is nothing to show in the toast.
+        crate::workspace::open(&app, inputs);
+        return;
+    }
     crate::toast::publish(&app, &base);
     std::thread::spawn(move || finish(&app, &base, &inputs, &target_id));
 }
@@ -258,6 +263,12 @@ fn finish_merge(app: &AppHandle, base: &JobUpdate, inputs: &[PathBuf]) {
 
 /// Converts the files one after another and publishes how the job ended.
 fn finish(app: &AppHandle, base: &JobUpdate, inputs: &[PathBuf], target_id: &str) {
+    if target_id == selection::ORGANIZE {
+        // The pack was just installed for the editor: clear the install toast and open it.
+        crate::toast::hide(app);
+        crate::workspace::open(app, inputs.to_vec());
+        return;
+    }
     if target_id == selection::MERGE {
         return finish_merge(app, base, inputs);
     }

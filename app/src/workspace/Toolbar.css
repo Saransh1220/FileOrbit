@@ -1,0 +1,75 @@
+.toolbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--m-line);
+}
+
+.toolbar h1 {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.divider {
+  width: 1px;
+  height: 20px;
+  margin: 0 8px;
+  background: var(--m-line);
+}
+
+.tool {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: var(--m-radius);
+  color: var(--m-fg);
+  background: none;
+  cursor: pointer;
+}
+
+.tool:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--m-fg) 9%, transparent);
+}
+
+.tool:disabled {
+  color: var(--m-faint);
+  opacity: 0.55;
+  cursor: default;
+}
+
+.tool:focus-visible,
+.size input:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--m-accent) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.size {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--m-muted);
+}
+
+.size input {
+  width: 110px;
+  accent-color: var(--m-accent);
+}

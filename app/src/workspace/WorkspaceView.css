@@ -1,0 +1,38 @@
+/* The page editor window: toolbar on top, pages in the middle, one bar at the bottom.
+   Every color comes from the same --m-* tokens as the manager window, so each theme restyles both. */
+.workspace {
+  --m-bg: var(--app-bg);
+  --m-fg: var(--fg);
+  --m-muted: var(--fg-muted);
+  --m-faint: color-mix(in srgb, var(--fg-muted) 75%, var(--app-bg));
+  --m-line: var(--hairline);
+  --m-accent: var(--accent);
+  --m-on-accent: var(--on-accent);
+  --m-ok: var(--ok);
+  --m-danger: var(--err);
+  --m-radius: 7px;
+
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: var(--workspace-height, 100vh);
+  color: var(--m-fg);
+  background: var(--m-bg);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.workspace .notice {
+  flex: 1;
+  margin: 0;
+  padding: 48px 20px;
+  text-align: center;
+  color: var(--m-muted);
+}
+
+.workspace .notice.problem {
+  color: var(--m-danger);
+  overflow-wrap: anywhere;
+}

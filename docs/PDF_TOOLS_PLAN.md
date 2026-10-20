@@ -1,6 +1,6 @@
 # PDF tools plan
 
-Status: **phases 0 and 1 are built** (2026-10-21); phases 2 to 6 are still plans. Written after the Windows port, themes and manager window.
+Status: **phases 0 to 3 are built** (phase 3 awaits a hand test of the in-app flow); phases 4 to 6 are still plans. Written after the Windows port, themes and manager window.
 
 Decisions taken: PDFium as the single engine; an "Organize" wedge plus drop on the hub; first release is phases 0 to 3; output next to the source with a new name; PDF to Word included with an honest "layout may differ" label.
 
@@ -169,7 +169,24 @@ Built and tested (79 unit tests plus a real-PDF suite that merges, reorders, mix
 
 Merge writes `<first file> (merged).pdf` next to the first file (then `(merged) (1)`), in the order Explorer or Finder gives the files, never touches the originals, fails by naming the damaged file, and leaves no half-written result. The toast says "Making one PDF" and then shows the file name and "3 files, 12 pages".
 
-Not yet: reordering files before merging (phase 4); the "Organize" wedge and the page editor (phase 3); the Mac ring edit compiles only on a Mac (CI checks it).
+Not yet: reordering files before merging (phase 4); the Mac ring edit compiles only on a Mac (CI checks it).
+
+## 5e. Phase 3 result (2026-10-20): the page editor for one PDF
+
+Built; the engine, model and browser design are tested, the in-app flow is waiting for a hand test.
+
+| Piece | What it does |
+|---|---|
+| Ring | A single PDF gets an **Organize** wedge after its conversions (tool wedge, page-grid icon, hub says "Reorder, rotate, delete"). **Dropping on the centre disc** opens the same editor; the hub then reads "Drop to open / Page editor". Several files and pictures do not get it yet (phase 4). |
+| Window | `workspace` window created on demand (1120 x 760, closes for real, asks before closing with unsaved edits). A second Organize drop while it is open hands the file to the same window (and asks first if there are unsaved edits). |
+| Editor | Page grid with lazy thumbnails (drawn near the viewport only, 3 at a time, JPEG over IPC as raw bytes). Click, Ctrl-click, Shift-click; drag to reorder (one page or the whole selection, insertion bar, edge auto-scroll, Esc cancels); hover buttons rotate and delete a page; toolbar rotate left/right, duplicate, delete, undo, redo, size slider. Keys: Del, R / Shift+R, Ctrl+Z / Ctrl+Y / Ctrl+Shift+Z, Ctrl+A, Ctrl+D, Ctrl+S, Esc. |
+| Save | **Save as new PDF** writes `<name> (edited).pdf` next to the original (then `(1)`), never overwriting or touching the original, leaves nothing behind on failure, and offers "Show in folder". |
+| Model | Non-destructive: the editor edits a list of page references (file, page, extra turn) with undo and redo. The plan is validated before anything is written. `engine/pdf/plan.rs` already accepts pages from several files, which phase 4 will use. |
+| Tests | 6 Rust unit tests and 5 real-PDF tests (reorder, drop, repeat, rotation added to the page's own, bad plan writes nothing, two files woven, thumbnails and page shapes); 41 frontend tests (page list, undo, move, selection rules, drag drop-point maths, card layout, thumbnail loader). CI now runs `npm test`. |
+
+Found on the way: PDFium garbled page text when several tests used it at the same time (a page read back as "ÿÿ"). The editor's commands take turns for that reason, and the PDF test files do too. Conversions started from the ring (`engines/pdfium.rs`) do not take turns yet; two PDF conversions at the very same moment could in theory hit it. Worth a process-wide lock inside `Library`.
+
+Not yet (phase 4 and later): several files in one editor with a file rail, insert blank page, extract and split, page ranges, large preview with Space, dropping files into the window, password prompt (a protected file shows its message instead), "Organize all" wedge for several PDFs.
 
 ## 6. Delivery in phases
 

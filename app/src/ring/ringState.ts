@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import { iconKindFor, PALETTE } from "./formatCategories";
 import type { RingViewProps } from "./ringViewProps";
+import type { Wedge } from "./types";
 
 export type SegmentState = "idle" | "hot" | "chosen" | "faded";
 
@@ -15,13 +16,25 @@ export interface HubText {
   kind: "name" | "label" | "note";
 }
 
+/** The id of the wedge (and hub drop) that opens the page editor; must match selection.rs. */
+export const ORGANIZE = "organize";
+
+function captionFor(wedge: Wedge): string {
+  if (wedge.id === ORGANIZE) return "Reorder, rotate, delete";
+  return wedge.tool ? "Into one PDF" : "Convert to";
+}
+
 /** What the center says: the file, the hovered target, or a short status. */
 export function hubText(p: RingViewProps): HubText {
   if (p.wedges.length === 0) return { caption: null, main: "No conversions available", kind: "note" };
-  if (p.confirmed !== null) return { caption: null, main: "Converting\u2026", kind: "note" };
+  if (p.confirmed !== null) {
+    const opening = p.wedges[p.confirmed]?.id === ORGANIZE;
+    return { caption: null, main: opening ? "Opening\u2026" : "Converting\u2026", kind: "note" };
+  }
+  if (p.hub) return { caption: "Drop to open", main: "Page editor", kind: "label" };
   if (p.hovered !== null) {
     const wedge = p.wedges[p.hovered];
-    return { caption: wedge.tool ? "Into one PDF" : "Convert to", main: wedge.label, kind: "label" };
+    return { caption: captionFor(wedge), main: wedge.label, kind: "label" };
   }
   return { caption: null, main: p.fileName, kind: "name" };
 }

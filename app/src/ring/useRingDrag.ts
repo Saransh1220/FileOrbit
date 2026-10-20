@@ -2,8 +2,9 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { wedgeIndexAt } from "./geometry";
+import { onHub, wedgeIndexAt } from "./geometry";
 import { dragPositionToCss, IS_MAC } from "./platform";
+import { ORGANIZE } from "./ringState";
 import type { Point, RingDrag, RingOpened, Wedge } from "./types";
 
 const log = (message: string) => void invoke("log_event", { message });
@@ -11,15 +12,19 @@ const log = (message: string) => void invoke("log_event", { message });
 /**
  * Tracks the OS drag over the overlay window and reports drops on a wedge.
  * `hovered` is the wedge under the pointer (null over the hub or outside);
- * `confirmed` is the wedge that just received a drop, shown until `finish`.
+ * `confirmed` is the wedge that just received a drop, shown until `finish`;
+ * `hub` is true while the pointer is over the center and dropping there opens
+ * the page editor (only offered when the ring has an Organize wedge).
  */
 export function useRingDrag() {
   const [hovered, setHovered] = useState<number | null>(null);
   const [confirmed, setConfirmed] = useState<number | null>(null);
+  const [hub, setHub] = useState(false);
   const [fileName, setFileName] = useState<string>("");
   const [wedges, setWedges] = useState<Wedge[]>([]);
   const wedgesRef = useRef<Wedge[]>([]);
   const hoveredRef = useRef<number | null>(null);
+  const hubRef = useRef(false);
   const pathsRef = useRef<string[]>([]);
 
   const finish = useCallback(() => {
@@ -33,13 +38,29 @@ export function useRingDrag() {
       setHovered(i);
     };
 
-    const hoverAt = (pos: Point) => setHover(wedgeIndexAt(dragPositionToCss(pos), wedgesRef.current.length));
+    const setOverHub = (on: boolean) => {
+      hubRef.current = on;
+      setHub(on);
+    };
+
+    // The center disc opens the page editor, but only when this ring has that wedge.
+    const hubAt = (css: Point) => wedgesRef.current.some((w) => w.id === ORGANIZE) && onHub(css);
+
+    const hoverAt = (pos: Point) => {
+      const css = dragPositionToCss(pos);
+      setHover(wedgeIndexAt(css, wedgesRef.current.length));
+      setOverHub(hubAt(css));
+    };
 
     const drop = (pos: Point, paths: string[]) => {
-      const index = wedgeIndexAt(dragPositionToCss(pos), wedgesRef.current.length);
-      log(`drop at ${pos.x},${pos.y} -> wedge ${index}`);
+      const css = dragPositionToCss(pos);
+      const index = wedgeIndexAt(css, wedgesRef.current.length);
+      const onCenter = hubAt(css);
+      log(`drop at ${pos.x},${pos.y} -> wedge ${index}${onCenter ? " (center)" : ""}`);
       setHover(null);
+      setOverHub(false);
       if (index === null) {
+        if (onCenter) void invoke("start_conversion", { paths, target: ORGANIZE });
         finish();
         return;
       }
@@ -61,6 +82,7 @@ export function useRingDrag() {
             hoverAt(p.position);
           } else if (p.type === "leave") {
             setHover(null);
+            setOverHub(false);
             log("drag leave");
           } else if (p.type === "drop") {
             drop(p.position, p.paths);
@@ -75,16 +97,17 @@ export function useRingDrag() {
             hoverAt({ x, y });
           } else if (kind === "leave") {
             setHover(null);
+            setOverHub(false);
           } else {
             drop({ x, y }, pathsRef.current);
           }
         });
 
     // Button released while the pointer was not over a wedge: no drop is
-    // coming, so close. If a wedge is hovered, the drop event closes us.
+    // coming, so close. If a wedge (or the center) is hovered, the drop event closes us.
     const unlistenEnded = listen("drag-ended", () => {
-      log(`drag ended, hovered=${hoveredRef.current}`);
-      if (hoveredRef.current === null) finish();
+      log(`drag ended, hovered=${hoveredRef.current} hub=${hubRef.current}`);
+      if (hoveredRef.current === null && !hubRef.current) finish();
     });
 
     const unlistenOpened = listen<RingOpened>("ring-opened", (e) => {
@@ -94,6 +117,7 @@ export function useRingDrag() {
       setFileName(e.payload.name);
       setConfirmed(null);
       setHover(null);
+      setOverHub(false);
       log(`ring opened for ${e.payload.name}: ${e.payload.targets.length} wedges`);
     });
 
@@ -104,5 +128,5 @@ export function useRingDrag() {
     };
   }, [finish]);
 
-  return { hovered, confirmed, fileName, wedges, finish };
+  return { hovered, confirmed, hub, fileName, wedges, finish };
 }

@@ -28,6 +28,11 @@ export function wedgeIndexAt(p: Point, count: number): number | null {
   return Math.floor(normalized / step) % count;
 }
 
+/** Whether a point (ring coordinates) is on the center disc, inside the ring of segments. */
+export function onHub(p: Point): boolean {
+  return Math.hypot(p.x - CENTER, p.y - CENTER) < INNER_RADIUS;
+}
+
 /** Angle (radians, 0 = 3 o'clock) at the middle of a segment; index 0 is 12 o'clock. */
 export const midAngle = (index: number, count: number) => -Math.PI / 2 + (index * TAU) / count;
 

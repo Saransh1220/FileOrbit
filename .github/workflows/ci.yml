@@ -44,6 +44,9 @@ jobs:
         run: |
           npm ci
           npm run build
+      - name: Test the web UI logic (page editor model, selection, drag maths)
+        working-directory: app
+        run: npm test
       - name: Test the app crate
         working-directory: app/src-tauri
         run: cargo test
