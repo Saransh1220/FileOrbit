@@ -41,7 +41,7 @@
 }
 
 .hex.has-focus .cell.idle {
-  opacity: 0.7;
+  opacity: 0.88;
 }
 
 .hex .cell.hot {
@@ -107,7 +107,7 @@
   font-weight: 700;
   letter-spacing: 0.07em;
   line-height: 1;
-  color: var(--fg-muted);
+  color: var(--fg);
 }
 
 .hex .content.hot {

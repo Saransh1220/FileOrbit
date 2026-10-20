@@ -32,7 +32,9 @@ fn log_event(message: String) {
 }
 
 /// A file was dropped on a wedge: convert each dropped file to that format.
-#[tauri::command]
+/// Async (off the main thread) because "organize" creates a window, and creating a
+/// window from the main thread inside a command deadlocks on Windows.
+#[tauri::command(async)]
 fn start_conversion(app: AppHandle, paths: Vec<String>, target: String) {
     engine::jobs::start(app, paths.into_iter().map(PathBuf::from).collect(), target);
 }

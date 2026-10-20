@@ -5,7 +5,7 @@
   --plate: oklch(0.27 0.008 60);
   --face: oklch(0.2 0.008 60);
   --cream: oklch(0.93 0.025 85);
-  --dim: oklch(0.66 0.02 75);
+  --dim: oklch(0.84 0.02 80);
   --rule: oklch(0.45 0.015 70);
   --needle: oklch(0.72 0.17 52);
   --done: oklch(0.78 0.14 150);
@@ -56,8 +56,8 @@
 .compass .label {
   position: absolute;
   transform: translate(-50%, -50%);
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 10.5px;
+  font-weight: 800;
   letter-spacing: 0.12em;
   color: var(--dim);
   transition:

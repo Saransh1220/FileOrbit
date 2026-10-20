@@ -66,11 +66,11 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   line-height: 1;
-  color: var(--fg-muted);
+  color: var(--fg);
 }
 
 .fan.has-focus .card.idle {
-  opacity: 0.7;
+  opacity: 0.88;
 }
 
 .fan .card.hot {

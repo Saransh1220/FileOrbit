@@ -31,7 +31,7 @@ export function hubText(p: RingViewProps): HubText {
     const opening = p.wedges[p.confirmed]?.id === ORGANIZE;
     return { caption: null, main: opening ? "Opening\u2026" : "Converting\u2026", kind: "note" };
   }
-  if (p.hub) return { caption: "Drop to open", main: "Page editor", kind: "label" };
+  if (p.hub) return { caption: "Drop to open", main: "Editor", kind: "label" };
   if (p.hovered !== null) {
     const wedge = p.wedges[p.hovered];
     return { caption: captionFor(wedge), main: wedge.label, kind: "label" };

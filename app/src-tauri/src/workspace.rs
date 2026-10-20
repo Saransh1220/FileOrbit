@@ -32,8 +32,7 @@ pub fn open(app: &AppHandle, files: Vec<PathBuf>) {
 
     if let Some(window) = app.get_webview_window(LABEL) {
         let _ = app.emit("workspace-open", paths);
-        let _ = window.show();
-        let _ = window.set_focus();
+        bring_to_front(&window);
         return;
     }
     let built = WebviewWindowBuilder::new(app, LABEL, WebviewUrl::App("index.html#workspace".into()))
@@ -41,10 +40,23 @@ pub fn open(app: &AppHandle, files: Vec<PathBuf>) {
         .inner_size(1120.0, 760.0)
         .min_inner_size(760.0, 480.0)
         .center()
+        .focused(true)
         .build();
-    if let Err(error) = built {
-        eprintln!("[workspace] could not open the page editor: {error}");
+    match built {
+        Ok(window) => bring_to_front(&window),
+        Err(error) => eprintln!("[workspace] could not open the page editor: {error}"),
     }
+}
+
+/// Puts the window in front and gives it focus. Windows refuses to focus a window for a
+/// program that is not in front (this one runs from the tray, and the drag came from
+/// Explorer), so it is made topmost for a moment and then released.
+fn bring_to_front(window: &tauri::WebviewWindow) {
+    let _ = window.unminimize();
+    let _ = window.show();
+    let _ = window.set_always_on_top(true);
+    let _ = window.set_focus();
+    let _ = window.set_always_on_top(false);
 }
 
 /// The files the window was opened for.
