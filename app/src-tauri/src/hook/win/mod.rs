@@ -13,6 +13,7 @@ use std::sync::mpsc;
 use tauri::AppHandle;
 use windows::Win32::System::Com::{CoInitializeEx, COINIT_APARTMENTTHREADED};
 
+use super::selection_memory::choose;
 use super::{DragTrigger, TriggerAction};
 use crate::overlay;
 use mouse_hook::MouseEvent;
@@ -33,10 +34,31 @@ fn worker(app: AppHandle, rx: mpsc::Receiver<MouseEvent>) {
     let mut press: (i32, i32) = (0, 0);
     let mut probed = false;
     let mut files: Vec<PathBuf> = Vec::new();
+    // Explorer shrinks the selection when Shift is held during a click, so the selection from
+    // just before the press is kept (see `selection_memory`).
+    let mut shift_held = false;
+    let mut button_held = false;
+    let mut remembered: Option<explorer::Selection> = None;
 
     for event in rx {
         let action = match event {
+            MouseEvent::ShiftDown => {
+                shift_held = true;
+                if !button_held {
+                    remembered = explorer::selection_at_cursor();
+                    eprintln!("[hook] Shift down: remembered {} selected file(s)", remembered.as_ref().map_or(0, |s| s.files.len()));
+                }
+                TriggerAction::None
+            }
+            MouseEvent::ShiftUp => {
+                shift_held = false;
+                if !button_held {
+                    remembered = None;
+                }
+                TriggerAction::None
+            }
             MouseEvent::Down { x, y } => {
+                button_held = true;
                 press = (x, y);
                 probed = false;
                 files.clear();
@@ -49,7 +71,13 @@ fn worker(app: AppHandle, rx: mpsc::Receiver<MouseEvent>) {
                     return overlay::wants_ring(&files);
                 }
                 probed = true;
-                files = explorer::selected_files_at(press.0, press.1);
+                let current = explorer::selection_at(press.0, press.1);
+                files = match (remembered.as_ref(), current) {
+                    // The same window: Explorer may have shrunk the selection when Shift was clicked.
+                    (Some(before), Some(now)) if before.window == now.window => choose(&before.files, now.files),
+                    (_, Some(now)) => now.files,
+                    (_, None) => Vec::new(),
+                };
                 eprintln!("[hook] shift-drag, files selected in Explorer: {}", files.len());
                 // No ring at all when nothing can be done with these files.
                 overlay::wants_ring(&files)
@@ -62,10 +90,14 @@ fn worker(app: AppHandle, rx: mpsc::Receiver<MouseEvent>) {
                 TriggerAction::None
             }
             MouseEvent::Up => {
+                button_held = false;
                 let a = trigger.button_up();
                 if a != TriggerAction::None {
                     eprintln!("[hook] mouse up -> {a:?}");
                 }
+                // With Shift still down, the selection after this click is the one the next
+                // press will start from.
+                remembered = if shift_held { explorer::selection_at_cursor() } else { None };
                 a
             }
         };

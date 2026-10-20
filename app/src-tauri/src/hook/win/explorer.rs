@@ -13,7 +13,7 @@ use windows::Win32::UI::Shell::{
     SWFO_NEEDDISPATCH,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
-    GetAncestor, GetClassNameW, IsWindowVisible, WindowFromPoint, GA_ROOT,
+    GetAncestor, GetClassNameW, GetCursorPos, IsWindowVisible, WindowFromPoint, GA_ROOT,
 };
 
 /// `CSIDL_DESKTOP`, the location code `FindWindowSW` uses for the desktop.
@@ -23,14 +23,30 @@ const CSIDL_DESKTOP: i32 = 0;
 /// and the two windows that can host the desktop.
 const FILE_SURFACE_CLASSES: [&str; 3] = ["CabinetWClass", "Progman", "WorkerW"];
 
-/// Files selected in the Explorer window or desktop under `(x, y)`, or empty
-/// if that point is not on a file surface (or the selection cannot be read).
-pub fn selected_files_at(x: i32, y: i32) -> Vec<PathBuf> {
-    // SAFETY: Win32/COM calls on valid values; the calling thread is a COM apartment.
-    unsafe { selection(x, y).unwrap_or_default() }
+/// The files selected in one Explorer window (or the desktop), and which window.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Selection {
+    /// The window's handle, so a selection remembered earlier is only reused for the same window.
+    pub window: isize,
+    pub files: Vec<PathBuf>,
 }
 
-unsafe fn selection(x: i32, y: i32) -> Option<Vec<PathBuf>> {
+/// The selection of the Explorer window or desktop under `(x, y)`, or `None` if that point
+/// is not on a file surface (or the selection cannot be read).
+pub fn selection_at(x: i32, y: i32) -> Option<Selection> {
+    // SAFETY: Win32/COM calls on valid values; the calling thread is a COM apartment.
+    unsafe { selection(x, y) }
+}
+
+/// The same, for the window under the mouse pointer right now.
+pub fn selection_at_cursor() -> Option<Selection> {
+    let mut point = POINT::default();
+    // SAFETY: `point` is a valid out parameter.
+    unsafe { GetCursorPos(&mut point) }.ok()?;
+    selection_at(point.x, point.y)
+}
+
+unsafe fn selection(x: i32, y: i32) -> Option<Selection> {
     let root = unsafe { GetAncestor(WindowFromPoint(POINT { x, y }), GA_ROOT) };
     if root.0.is_null() {
         return None;
@@ -45,7 +61,8 @@ unsafe fn selection(x: i32, y: i32) -> Option<Vec<PathBuf>> {
     } else {
         unsafe { desktop_view(&windows) }
     }?;
-    unsafe { selected_paths(&view) }
+    let files = unsafe { selected_paths(&view) }?;
+    Some(Selection { window: root.0 as isize, files })
 }
 
 fn class_name(hwnd: HWND) -> String {

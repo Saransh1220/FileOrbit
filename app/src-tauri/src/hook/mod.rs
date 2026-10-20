@@ -3,6 +3,7 @@
 //! Each OS has its own listener; both feed the same [`DragTrigger`] state
 //! machine so the trigger rules live in exactly one place.
 
+mod selection_memory;
 mod trigger;
 
 #[cfg(target_os = "macos")]

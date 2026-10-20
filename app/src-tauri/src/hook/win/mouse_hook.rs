@@ -7,10 +7,10 @@ use std::sync::OnceLock;
 use tauri::AppHandle;
 use windows::Win32::Foundation::{HINSTANCE, LPARAM, LRESULT, WPARAM};
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
-use windows::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_ESCAPE, VK_SHIFT};
+use windows::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_ESCAPE, VK_LSHIFT, VK_RSHIFT, VK_SHIFT};
 use windows::Win32::UI::WindowsAndMessaging::{
     CallNextHookEx, GetMessageW, SetWindowsHookExW, KBDLLHOOKSTRUCT, MSG, MSLLHOOKSTRUCT, WH_KEYBOARD_LL,
-    WH_MOUSE_LL, WM_KEYDOWN, WM_LBUTTONDOWN, WM_LBUTTONUP, WM_MOUSEMOVE,
+    WH_MOUSE_LL, WM_KEYDOWN, WM_KEYUP, WM_LBUTTONDOWN, WM_LBUTTONUP, WM_MOUSEMOVE, WM_SYSKEYDOWN, WM_SYSKEYUP,
 };
 
 /// Screen coordinates are physical pixels (the app is per-monitor DPI aware).
@@ -20,10 +20,14 @@ pub enum MouseEvent {
     Up,
     /// Esc was pressed while a button was held.
     Cancel,
+    /// Shift went down or up (reported once per change, not for key repeats).
+    ShiftDown,
+    ShiftUp,
 }
 
 static EVENTS: OnceLock<Sender<MouseEvent>> = OnceLock::new();
 static LEFT_DOWN: AtomicBool = AtomicBool::new(false);
+static SHIFT_HELD: AtomicBool = AtomicBool::new(false);
 
 pub fn run(app: AppHandle, tx: Sender<MouseEvent>) {
     let _ = EVENTS.set(tx);
@@ -46,13 +50,27 @@ pub fn run(app: AppHandle, tx: Sender<MouseEvent>) {
     }
 }
 
+fn send(event: MouseEvent) {
+    if let Some(tx) = EVENTS.get() {
+        let _ = tx.send(event);
+    }
+}
+
 unsafe extern "system" fn keyboard_proc(code: i32, wparam: WPARAM, lparam: LPARAM) -> LRESULT {
-    if code >= 0 && wparam.0 as u32 == WM_KEYDOWN && LEFT_DOWN.load(Ordering::Relaxed) {
+    if code >= 0 {
         // SAFETY: for WH_KEYBOARD_LL, lparam points to a KBDLLHOOKSTRUCT.
         let info = unsafe { &*(lparam.0 as *const KBDLLHOOKSTRUCT) };
-        if info.vkCode == VK_ESCAPE.0 as u32 {
-            if let Some(tx) = EVENTS.get() {
-                let _ = tx.send(MouseEvent::Cancel);
+        let pressed = matches!(wparam.0 as u32, WM_KEYDOWN | WM_SYSKEYDOWN);
+        let released = matches!(wparam.0 as u32, WM_KEYUP | WM_SYSKEYUP);
+        let key = info.vkCode;
+        if key == VK_ESCAPE.0 as u32 && pressed && LEFT_DOWN.load(Ordering::Relaxed) {
+            send(MouseEvent::Cancel);
+        } else if key == VK_LSHIFT.0 as u32 || key == VK_RSHIFT.0 as u32 || key == VK_SHIFT.0 as u32 {
+            // Holding a key repeats its key-down; only the change matters.
+            if pressed && !SHIFT_HELD.swap(true, Ordering::Relaxed) {
+                send(MouseEvent::ShiftDown);
+            } else if released && SHIFT_HELD.swap(false, Ordering::Relaxed) {
+                send(MouseEvent::ShiftUp);
             }
         }
     }
