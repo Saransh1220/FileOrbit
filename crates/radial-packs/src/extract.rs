@@ -116,18 +116,38 @@ mod msi {
 
     #[cfg(windows)]
     pub fn extract(archive: &Path, dest: &Path) -> Result<(), String> {
+        use std::os::windows::process::CommandExt;
         use std::process::Command;
+
+        // msiexec wants `TARGETDIR="C:\path with spaces"`: the quotes go around the
+        // value, not around the whole argument, so the command line is built by hand.
+        // (The default install folder, "Radial Convert", has a space in it.)
+        let quoted = |p: &Path| format!("\"{}\"", p.display());
+        let mut log = dest.as_os_str().to_owned();
+        log.push(".msi.log");
+        let log = std::path::PathBuf::from(log);
+
         let output = Command::new("msiexec")
-            .arg("/a")
-            .arg(archive)
-            .arg("/qn")
-            .arg(format!("TARGETDIR={}", dest.display()))
+            .raw_arg("/a")
+            .raw_arg(quoted(archive))
+            .raw_arg("/qn")
+            .raw_arg("/norestart")
+            .raw_arg(format!("TARGETDIR={}", quoted(dest)))
+            .raw_arg("/L*V")
+            .raw_arg(quoted(&log))
             .output()
             .map_err(|e| format!("cannot run msiexec: {e}"))?;
-        if output.status.success() {
-            Ok(())
-        } else {
-            Err(format!("msiexec failed with {}", output.status))
+        // 3010 means "a restart would finish the job", which an unpack never needs.
+        match output.status.code() {
+            Some(0) | Some(3010) => {
+                let _ = std::fs::remove_file(&log);
+                Ok(())
+            }
+            other => Err(format!(
+                "the Windows installer service could not unpack the package (exit code {}). Details: {}",
+                other.map_or("none".to_string(), |c| c.to_string()),
+                log.display()
+            )),
         }
     }
 

@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { StatusView } from "../status/StatusView";
 import { ToastView } from "../toast/ToastView";
 import type { JobUpdate } from "../toast/types";
 import "../toast/ToastSkins.css";
@@ -75,10 +74,6 @@ export function RingDemo() {
       />
       <div style={{ width: 420 }}>
         <ToastView job={JOBS[job]} onDismiss={() => {}} onReveal={() => {}} onInstall={() => {}} />
-      </div>
-      <div className="demo-status" style={{ width: 380, marginTop: 8 }}>
-        <style>{".demo-status .app { min-height: 0; }"}</style>
-        <StatusView status="listening" />
       </div>
     </>
   );

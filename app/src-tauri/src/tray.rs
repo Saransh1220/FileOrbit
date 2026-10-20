@@ -19,7 +19,7 @@ pub fn build(app: &App) -> tauri::Result<()> {
     let choice_refs: Vec<&dyn IsMenuItem<Wry>> = choices.iter().map(|c| c as &dyn IsMenuItem<Wry>).collect();
     let theme = Submenu::with_items(app, "Theme", true, &choice_refs)?;
 
-    let status = MenuItem::with_id(app, "status", "Show status", true, None::<&str>)?;
+    let status = MenuItem::with_id(app, "status", "Manage converters", true, None::<&str>)?;
     let quit = MenuItem::with_id(app, "quit", "Quit Radial Convert", true, None::<&str>)?;
     let separator = PredefinedMenuItem::separator(app)?;
     let menu = Menu::with_items(app, &[&status, &theme, &separator, &quit])?;

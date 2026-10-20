@@ -9,6 +9,10 @@ const CHUNK: usize = 64 * 1024;
 
 /// Fetches `url` into `dest`, reporting `(bytes so far, total if known)`.
 /// Supports `http(s)://` and `file://` (offline mirrors, tests).
+///
+/// If `dest` already holds the start of the file (an interrupted download), the
+/// transfer continues from there when the server supports it, and starts over
+/// when it does not. The reported numbers always count from the file's start.
 pub fn download(
     url: &str,
     dest: &Path,
@@ -24,30 +28,61 @@ pub fn download(
             .ok_or_else(|| format!("bad file URL: {url}"))?;
         let total = std::fs::metadata(&source).map(|m| m.len()).ok();
         let mut reader = File::open(&source).map_err(|e| format!("cannot open {}: {e}", source.display()))?;
-        return copy_stream(&mut reader, dest, total, on_progress);
+        return copy_stream(&mut reader, dest, 0, total, on_progress);
     }
 
-    let response = ureq::get(url)
-        .call()
-        .map_err(|e| format!("download failed for {url}: {e}"))?;
-    let total = response
+    let have = std::fs::metadata(dest).map(|m| m.len()).unwrap_or(0);
+    if have > 0 {
+        match request(url, Some(have)) {
+            Ok(response) if response.status().as_u16() == 206 => {
+                let total = content_length(&response).map(|rest| have + rest);
+                let mut reader = response.into_body().into_reader();
+                return copy_stream(&mut reader, dest, have, total, on_progress);
+            }
+            // The server ignored the range, or the partial file is no use: fall through and start over.
+            Ok(_) | Err(_) => {}
+        }
+    }
+    let response = request(url, None)?;
+    let total = content_length(&response);
+    let mut reader = response.into_body().into_reader();
+    copy_stream(&mut reader, dest, 0, total, on_progress)
+}
+
+fn request(url: &str, from: Option<u64>) -> Result<ureq::http::Response<ureq::Body>, String> {
+    let mut call = ureq::get(url);
+    if let Some(offset) = from {
+        call = call.header("Range", &format!("bytes={offset}-"));
+    }
+    call.call().map_err(|e| format!("download failed for {url}: {e}"))
+}
+
+fn content_length(response: &ureq::http::Response<ureq::Body>) -> Option<u64> {
+    response
         .headers()
         .get("content-length")
         .and_then(|v| v.to_str().ok())
-        .and_then(|s| s.parse::<u64>().ok());
-    let mut reader = response.into_body().into_reader();
-    copy_stream(&mut reader, dest, total, on_progress)
+        .and_then(|s| s.parse::<u64>().ok())
 }
 
+/// Writes `reader` to `dest`. With `already > 0` the bytes are appended after
+/// the first `already` bytes; otherwise the file starts empty.
 fn copy_stream(
     reader: &mut dyn Read,
     dest: &Path,
+    already: u64,
     total: Option<u64>,
     on_progress: &mut dyn FnMut(u64, Option<u64>),
 ) -> Result<(), String> {
-    let mut out = File::create(dest).map_err(|e| format!("cannot create {}: {e}", dest.display()))?;
+    let mut out = if already > 0 {
+        std::fs::OpenOptions::new().append(true).open(dest)
+    } else {
+        File::create(dest)
+    }
+    .map_err(|e| format!("cannot write {}: {e}", dest.display()))?;
     let mut buffer = vec![0u8; CHUNK];
-    let mut done = 0u64;
+    let mut done = already;
+    on_progress(done, total);
     loop {
         let n = reader.read(&mut buffer).map_err(|e| format!("download interrupted: {e}"))?;
         if n == 0 {

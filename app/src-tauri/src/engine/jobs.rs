@@ -111,6 +111,7 @@ pub fn progress_of(event: &Event, elapsed: Duration) -> Progress {
             download_text::downloading(engine, *done, *total, elapsed),
         ),
         Event::Verifying { engine } => (None, format!("Checking the {engine} download")),
+        Event::UsingCached { engine } => (None, format!("Using the {engine} download from earlier")),
         Event::Extracting { engine } => (None, format!("Unpacking {engine}, this can take a minute")),
         Event::Adopted { engine, .. } => (None, format!("Using {engine} already on this computer")),
         Event::Installed { engine } => (Some(100), format!("{engine} installed")),
@@ -205,6 +206,14 @@ pub fn install_pack_for_job(app: AppHandle, id: u64) {
     let Some(pending) = app.state::<PendingJobs>().take(id) else {
         return;
     };
+    // One install at a time; if the manager window is installing, say so on the toast.
+    if let Err(message) = app.state::<crate::manager::InstallLock>().begin(pending.pack) {
+        let name = pending.input.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
+        let mut failed = JobUpdate::new(id, &name, &pending.target, JobState::Failed);
+        failed.error = Some(message);
+        crate::toast::publish(&app, &failed);
+        return;
+    }
     std::thread::spawn(move || {
         let name = pending.input.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
         let base = JobUpdate::new(id, &name, &pending.target, JobState::Running);
@@ -242,6 +251,9 @@ pub fn install_pack_for_job(app: AppHandle, id: u64) {
                 }
             })
         });
+
+        app.state::<crate::manager::InstallLock>().end();
+        crate::manager::notify_changed(&app);
 
         match result {
             Ok(_) => {

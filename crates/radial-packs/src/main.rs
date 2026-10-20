@@ -190,6 +190,7 @@ fn install(installer: &Installer, packs: Vec<String>, all: bool, yes: bool) -> R
             bar.finish_and_clear();
             println!("{engine}: verifying checksum");
         }
+        Event::UsingCached { engine } => println!("{engine}: using the download from earlier"),
         Event::Extracting { engine } => println!("{engine}: unpacking"),
         Event::Adopted { engine, path } => println!("{engine}: using {}", path.display()),
         Event::Installed { engine } => println!("{engine}: installed"),

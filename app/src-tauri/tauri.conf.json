@@ -16,8 +16,11 @@
         "label": "main",
         "title": "Radial Convert",
         "visible": false,
-        "width": 520,
-        "height": 460
+        "width": 640,
+        "height": 760,
+        "minWidth": 480,
+        "minHeight": 520,
+        "center": true
       },
       {
         "label": "toast",

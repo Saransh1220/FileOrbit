@@ -1,0 +1,88 @@
+/* Subtle per-theme touches for the manager window. They only change the
+   --m-* tokens (and the odd detail), so the layout stays identical everywhere. */
+
+/* ---- Bold: graphite page ---- */
+[data-design="bold"] .manager {
+  --m-bg: oklch(0.21 0.012 265);
+  --m-fg: oklch(0.96 0.004 265);
+  --m-muted: oklch(0.76 0.01 265);
+  --m-faint: oklch(0.6 0.01 265);
+  --m-line: oklch(0.31 0.014 265);
+  --m-accent: oklch(0.66 0.17 262);
+  --m-on-accent: #fff;
+  --m-ok: oklch(0.74 0.12 160);
+  --m-danger: oklch(0.72 0.14 25);
+  --m-radius: 8px;
+}
+
+[data-design="bold"] .manager h1 {
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+
+/* ---- Brutal: pale yellow page, black rules, hard-edged buttons ---- */
+[data-design="brutal"] .manager {
+  --m-bg: oklch(0.965 0.06 95);
+  --m-fg: oklch(0.15 0 0);
+  --m-muted: oklch(0.33 0 0);
+  --m-faint: oklch(0.45 0 0);
+  --m-line: oklch(0.15 0 0);
+  --m-accent: oklch(0.9 0.17 95);
+  --m-on-accent: oklch(0.15 0 0);
+  --m-ok: oklch(0.42 0.12 150);
+  --m-danger: oklch(0.45 0.18 27);
+  --m-radius: 4px;
+  font-family: "Archivo", "Arial Black", "Segoe UI", system-ui, sans-serif;
+}
+
+[data-design="brutal"] .manager h1 {
+  font-weight: 900;
+}
+
+[data-design="brutal"] .manager h2,
+[data-design="brutal"] .pack,
+[data-design="brutal"] .manager .line {
+  border-bottom-width: 2px;
+}
+
+[data-design="brutal"] .pack button.primary {
+  border: 2px solid oklch(0.15 0 0);
+  box-shadow: 2px 2px 0 oklch(0.15 0 0);
+}
+
+[data-design="brutal"] .manager button.link {
+  color: var(--m-fg);
+  text-decoration: underline;
+}
+
+/* ---- Petals: a warm accent and rounder corners; the page follows the OS light or dark setting ---- */
+[data-design="petals"] .manager {
+  --m-accent: oklch(0.62 0.15 20);
+  --m-radius: 12px;
+}
+
+/* ---- Compass: warm graphite and orange ---- */
+[data-design="compass"] .manager {
+  --m-bg: oklch(0.27 0.008 60);
+  --m-fg: oklch(0.93 0.025 85);
+  --m-muted: oklch(0.74 0.02 78);
+  --m-faint: oklch(0.58 0.018 75);
+  --m-line: oklch(0.38 0.012 65);
+  --m-accent: oklch(0.72 0.17 52);
+  --m-on-accent: oklch(0.2 0.008 60);
+  --m-ok: oklch(0.78 0.14 150);
+  --m-danger: oklch(0.72 0.16 28);
+  --m-radius: 6px;
+  font-family: "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+}
+
+/* ---- Fan: a colored head rule on the page ---- */
+[data-design="fan"] .manager {
+  --m-radius: 6px;
+  border-top: 5px solid var(--m-accent);
+}
+
+/* ---- Hex: crisp corners ---- */
+[data-design="hex"] .manager {
+  --m-radius: 2px;
+}

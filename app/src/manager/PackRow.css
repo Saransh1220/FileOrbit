@@ -1,0 +1,147 @@
+/* One converter row: text on the left, one action on the right, a hairline below. */
+.pack {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--m-line);
+}
+
+.pack-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.pack h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+.pack p {
+  margin: 3px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.pack .what {
+  color: var(--m-muted);
+}
+
+.pack .details,
+.pack .progress-text {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--m-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.pack .progress-text {
+  color: var(--m-muted);
+}
+
+.pack .problem {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--m-danger);
+  overflow-wrap: anywhere;
+}
+
+.pack-action {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.pack .state {
+  font-size: 12.5px;
+  color: var(--m-faint);
+}
+
+.pack .state.done {
+  color: var(--m-ok);
+}
+
+/* Buttons: one filled style for the main action, plain text for everything else. */
+.pack button {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    color 120ms ease,
+    opacity 120ms ease;
+}
+
+.pack button.primary {
+  padding: 7px 16px;
+  border: none;
+  border-radius: var(--m-radius);
+  color: var(--m-on-accent);
+  background: var(--m-accent);
+}
+
+.pack button.primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--m-accent) 86%, #000);
+}
+
+.pack button.primary:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.pack button.quiet,
+.pack button.danger {
+  padding: 4px 2px;
+  border: none;
+  background: none;
+  color: var(--m-muted);
+}
+
+.pack button.quiet:hover {
+  color: var(--m-fg);
+}
+
+.pack button.danger {
+  color: var(--m-danger);
+}
+
+.pack button.danger:hover {
+  text-decoration: underline;
+}
+
+/* Progress: a hairline along the bottom of the row. */
+.pack .meter {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  overflow: hidden;
+  background: var(--m-line);
+}
+
+.pack .meter i {
+  display: block;
+  height: 100%;
+  background: var(--m-accent);
+  transition: width 200ms linear;
+}
+
+.pack .meter i.indeterminate {
+  width: 30%;
+  animation: m-slide 1.2s ease-in-out infinite;
+}
+
+@keyframes m-slide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(340%);
+  }
+}

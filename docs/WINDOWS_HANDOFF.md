@@ -62,6 +62,12 @@ Design
 - [ ] More design options were requested after Bold and Brutal. Five earlier designs (Orbit, Blueprint, Halo, Chips, Clock) are kept in git under the tag `designs-archive-8`.
 - [ ] Check every theme on macOS (the UI is shared, but only Windows has been run).
 
+## Converter manager and download cache (done)
+
+- The tray item "Manage converters" opens a window (`app/src/manager/`) that lists the five packs with their size, install state and live progress, with Install and Remove (Remove asks to confirm). It also shows storage used, kept downloads (Clear), the data folder (Open), and a Theme picker. Backend: `app/src-tauri/src/manager.rs`. Only one install runs at a time (`InstallLock`), whether started from the manager or from a toast.
+- Downloads are kept in `<data folder>/downloads` after they are verified, reused after a failed unpack or a removal, and resumed with an HTTP Range request when interrupted (`crates/radial-packs/tests/cache.rs` covers this with a local server). "Clear" empties that folder.
+- Windows LibreOffice unpack: `msiexec` needs `TARGETDIR="path with spaces"`, with the quotes around the value. The old code quoted the whole argument, which most likely broke the install for the default folder "Radial Convert" (the folder name has a space). Fixed and checked on a real run: LibreOffice unpacked into a folder with a space, `radial doctor` ran it, a reinstall reused the download. The unpack log is written next to the engine folder as `<version>.partial.msi.log` when it fails. LibreOffice takes about 1.6 GB on disk on Windows once unpacked.
+
 ## Context worth keeping
 
 - The design is deliberately flat and minimal; preview UI changes in the browser (`npm run dev`, then `#ring-demo`) before rebuilding the app.

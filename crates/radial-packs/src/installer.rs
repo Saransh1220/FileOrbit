@@ -12,6 +12,8 @@ use std::process::{Command, Stdio};
 pub enum Event {
     Downloading { engine: String, done: u64, total: Option<u64> },
     Verifying { engine: String },
+    /// A verified download from an earlier attempt is reused instead of fetching it again.
+    UsingCached { engine: String },
     Extracting { engine: String },
     Adopted { engine: String, path: PathBuf },
     Installed { engine: String },
@@ -182,28 +184,53 @@ impl Installer {
         on_event: &mut dyn FnMut(Event),
     ) -> Result<PathBuf, String> {
         check_relative(&artifact.bin)?;
-        let download = paths::downloads_dir(&self.home).join(format!("{engine}-{version}.part"));
+        let download = cached_download_path(&self.home, engine, version, artifact);
+        let in_progress = download.with_extension(format!("{}.part", extension_of(&download)));
         let engine_dir = paths::engines_dir(&self.home).join(engine);
         let partial = engine_dir.join(format!("{version}.partial"));
         let final_dir = engine_dir.join(version);
 
         let result = (|| -> Result<PathBuf, String> {
-            fetch::download(&artifact.url, &download, &mut |done, total| {
-                on_event(Event::Downloading { engine: engine.to_string(), done, total });
-            })?;
-            on_event(Event::Verifying { engine: engine.to_string() });
-            fetch::verify(&download, &artifact.sha256)?;
-
-            on_event(Event::Extracting { engine: engine.to_string() });
-            let _ = std::fs::remove_dir_all(&partial);
-            if artifact.archive == ArchiveKind::Raw {
-                std::fs::create_dir_all(&partial).map_err(|e| e.to_string())?;
-                std::fs::copy(&download, partial.join(&artifact.bin)).map_err(|e| e.to_string())?;
+            // A finished, verified download from an earlier attempt is reused: a failed
+            // unpack must not cost the user the whole download again.
+            if download.is_file() && fetch::verify(&download, &artifact.sha256).is_ok() {
+                on_event(Event::UsingCached { engine: engine.to_string() });
             } else {
-                extract::extract(&download, artifact.archive, &partial)?;
+                let _ = std::fs::remove_file(&download);
+                // A partial file from an interrupted attempt is continued, not restarted.
+                // One already as large as expected is complete and only needs checking.
+                let already_whole = std::fs::metadata(&in_progress).is_ok_and(|m| m.len() == artifact.size_bytes);
+                if !already_whole {
+                    fetch::download(&artifact.url, &in_progress, &mut |done, total| {
+                        on_event(Event::Downloading { engine: engine.to_string(), done, total });
+                    })?;
+                }
+                on_event(Event::Verifying { engine: engine.to_string() });
+                if let Err(why) = fetch::verify(&in_progress, &artifact.sha256) {
+                    // Corrupt or tampered: keeping it would make every retry fail the same way.
+                    let _ = std::fs::remove_file(&in_progress);
+                    return Err(why);
+                }
+                std::fs::rename(&in_progress, &download)
+                    .map_err(|e| format!("cannot keep the download {}: {e}", download.display()))?;
             }
-            let exe_rel = locate_executable(&partial, &artifact.bin)?;
-            make_executable(&partial.join(&exe_rel))?;
+
+            // From here the download is safe in the cache, so any failure says so.
+            let unpacked = (|| -> Result<PathBuf, String> {
+                on_event(Event::Extracting { engine: engine.to_string() });
+                let _ = std::fs::remove_dir_all(&partial);
+                if artifact.archive == ArchiveKind::Raw {
+                    std::fs::create_dir_all(&partial).map_err(|e| e.to_string())?;
+                    std::fs::copy(&download, partial.join(&artifact.bin)).map_err(|e| e.to_string())?;
+                } else {
+                    extract::extract(&download, artifact.archive, &partial)?;
+                }
+                let exe_rel = locate_executable(&partial, &artifact.bin)?;
+                make_executable(&partial.join(&exe_rel))?;
+                Ok(exe_rel)
+            })()
+            .map_err(|why| format!("{why}. The download is kept, so trying again will not download it again"))?;
+            let exe_rel = unpacked;
 
             // Swap in only after everything worked, so a failure never leaves a half-installed engine.
             let _ = std::fs::remove_dir_all(&final_dir);
@@ -212,11 +239,42 @@ impl Installer {
             Ok(final_dir.join(exe_rel))
         })();
 
-        let _ = std::fs::remove_file(&download);
+        // The verified download stays in the cache (it can be cleared from the manager);
+        // only a half-unpacked folder is thrown away.
         if result.is_err() {
             let _ = std::fs::remove_dir_all(&partial);
         }
         result
+    }
+
+    /// Size of the downloads a pack needs on this platform, whether or not they are
+    /// installed already. `None` when some engine has no published download here.
+    pub fn pack_download_bytes(&self, pack_id: &str) -> Option<u64> {
+        let pack = catalog::pack(pack_id)?;
+        pack.engines
+            .iter()
+            .map(|engine| self.manifest.artifact(engine, &self.platform).map(|(_, a)| a.size_bytes))
+            .sum()
+    }
+
+    /// Bytes held by downloads kept for reuse (finished and partial).
+    pub fn cache_bytes(&self) -> u64 {
+        folder_bytes(&paths::downloads_dir(&self.home))
+    }
+
+    /// Deletes every kept download. Installed engines are not touched.
+    pub fn clear_cache(&self) -> Result<(), String> {
+        let dir = paths::downloads_dir(&self.home);
+        match std::fs::remove_dir_all(&dir) {
+            Ok(()) => Ok(()),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
+            Err(e) => Err(format!("cannot clear {}: {e}", dir.display())),
+        }
+    }
+
+    /// Bytes an installed engine takes on disk (0 when it is not installed or is a system copy).
+    pub fn engine_disk_bytes(&self, engine: &str) -> u64 {
+        folder_bytes(&paths::engines_dir(&self.home).join(engine))
     }
 
     /// Removes a pack. Returns the engines that were dropped because no
@@ -259,6 +317,22 @@ impl Installer {
     }
 }
 
+/// Where the finished, verified download of an engine is kept between attempts.
+fn cached_download_path(home: &Path, engine: &str, version: &str, artifact: &Artifact) -> PathBuf {
+    let ext = match artifact.archive {
+        ArchiveKind::Zip => "zip",
+        ArchiveKind::TarGz => "tar.gz",
+        ArchiveKind::Raw => "bin",
+        ArchiveKind::Dmg => "dmg",
+        ArchiveKind::Msi => "msi",
+    };
+    paths::downloads_dir(home).join(format!("{engine}-{version}.{ext}"))
+}
+
+fn extension_of(path: &Path) -> String {
+    path.extension().map(|e| e.to_string_lossy().into_owned()).unwrap_or_default()
+}
+
 /// Where the executable ended up, relative to the extracted folder.
 ///
 /// The manifest's exact path is used when it exists. Some packages (Windows
@@ -297,6 +371,19 @@ fn find_files_named(root: &Path, dir: &Path, name: &std::ffi::OsStr, out: &mut V
             }
         }
     }
+}
+
+/// Total size of the files under `dir`; symlinks are not followed.
+fn folder_bytes(dir: &Path) -> u64 {
+    let Ok(entries) = std::fs::read_dir(dir) else { return 0 };
+    entries
+        .filter_map(Result::ok)
+        .map(|entry| match entry.file_type() {
+            Ok(kind) if kind.is_dir() => folder_bytes(&entry.path()),
+            Ok(kind) if kind.is_file() => entry.metadata().map(|m| m.len()).unwrap_or(0),
+            _ => 0,
+        })
+        .sum()
 }
 
 /// `bin` comes from the manifest; refuse anything that could point outside the engine folder.

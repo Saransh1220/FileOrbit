@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./theme.css";
 import { Ring } from "./ring/Ring";
+import { ManagerDemo } from "./manager/ManagerDemo";
 import { RingDemo } from "./ring/RingDemo";
 import { Toast } from "./toast/Toast";
 
@@ -11,7 +12,10 @@ const views: Record<string, () => React.JSX.Element | null> = {
   "#overlay": Ring,
   "#toast": Toast,
 };
-if (import.meta.env.DEV) views["#ring-demo"] = RingDemo;
+if (import.meta.env.DEV) {
+  views["#ring-demo"] = RingDemo;
+  views["#manager-demo"] = ManagerDemo;
+}
 const View = views[window.location.hash] ?? App;
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(

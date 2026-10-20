@@ -1,6 +1,7 @@
 mod design;
 pub mod engine;
 mod hook;
+mod manager;
 mod overlay;
 #[cfg(target_os = "windows")]
 mod overlay_catcher;
@@ -59,12 +60,20 @@ pub fn run() {
     tauri::Builder::default()
         .manage(status::HookStatus::default())
         .manage(design::CurrentDesign::default())
+        .manage(manager::InstallLock::default())
         .manage(engine::pending::PendingJobs::default())
         .invoke_handler(tauri::generate_handler![
             hide_overlay,
             hide_toast,
             install_pack_for_job,
             design::get_design,
+            manager::clear_downloads,
+            manager::get_overview,
+            manager::install_pack,
+            manager::list_designs,
+            manager::open_data_folder,
+            manager::remove_pack,
+            manager::set_design,
             log_event,
             reveal_in_file_manager,
             start_conversion,
