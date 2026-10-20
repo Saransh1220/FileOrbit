@@ -39,9 +39,8 @@ app/src-tauri/gen/
 secrets/
 credentials*.json
 
-# Mirror tool download cache and downloaded engines
+# Mirror tool download cache and its output
 .mirror-cache/
-engines/
 engines.manifest.mirrored.json
 
 # Files the converter writes next to its inputs while testing
