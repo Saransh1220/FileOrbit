@@ -12,6 +12,8 @@ pub enum Tool {
     Pandoc,
     Ffmpeg,
     LibreOffice,
+    /// The PDF library (a shared library, loaded rather than run).
+    Pdfium,
     Sips,
 }
 
@@ -21,6 +23,7 @@ impl Tool {
             Tool::Pandoc => "pandoc",
             Tool::Ffmpeg => "ffmpeg",
             Tool::LibreOffice => "soffice",
+            Tool::Pdfium => "pdfium",
             Tool::Sips => "sips",
         }
     }
@@ -31,6 +34,7 @@ impl Tool {
             Tool::Pandoc => Some("pandoc"),
             Tool::Ffmpeg => Some("ffmpeg"),
             Tool::LibreOffice => Some("libreoffice"),
+            Tool::Pdfium => Some("pdfium"),
             Tool::Sips => None,
         }
     }
@@ -41,6 +45,7 @@ impl Tool {
             Tool::Pandoc => "Run `radial install` and choose \"Text & Markup\".",
             Tool::Ffmpeg => "Run `radial install` and choose Audio, Video or Images.",
             Tool::LibreOffice => "Run `radial install` and choose Documents.",
+            Tool::Pdfium => "Run `radial install` and choose PDF tools.",
             Tool::Sips => "sips is built into macOS.",
         }
     }

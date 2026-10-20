@@ -123,6 +123,20 @@ It fits the modular design we already have: a **"PDF tools" pack** whose engine 
 - The PDFium library lives in the engine folder like the other engines. On macOS it must be code-signed together with the app for notarization; on Windows the DLL sits beside the program that loads it.
 - Hold the whole plan in memory only as references; render on demand and keep a small thumbnail cache on disk, so a 500-page PDF does not need 500 images in memory.
 
+## 5b. Phase 0 result (2026-10-21)
+
+PDFium works as a pack. Measured on Windows 11 (debug build):
+
+| Check | Result |
+|---|---|
+| Download | 3.9 MB (Windows), 3.5 MB (macOS Apple Silicon), 3.7 MB (macOS Intel); pinned to `chromium/8111` (PDFium 158.0.8111) |
+| On disk | 7.6 MB (`pdfium.dll`) |
+| Install through the pack system | 23 s including download; `radial doctor` reports it |
+| Load from Rust | 5 ms |
+| Create, save, reopen a PDF; render an A4 page to 800 px | works; render 2.4 ms; the image is not blank |
+| Damaged file | clear message ("is damaged or is not a PDF file") |
+| macOS | **Not tried.** The release app must be allowed to load a library it did not ship: a notarized app with the hardened runtime refuses unsigned libraries unless the entitlement `com.apple.security.cs.disable-library-validation` is set (Tauri: `bundle.macOS.entitlements`). Check this on a Mac before the first release. |
+
 ## 6. Delivery in phases
 
 | Phase | What ships | Checkpoint |

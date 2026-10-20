@@ -78,6 +78,32 @@
           "size_bytes": 374870016
         }
       }
+    },
+    "pdfium": {
+      "version": "158.0.8111",
+      "platforms": {
+        "macos-aarch64": {
+          "url": "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/8111/pdfium-mac-arm64.tgz",
+          "sha256": "46c674298c60123f1195c2a03c65ee08c4783c84874ce4f5b3a054abb3ecaf30",
+          "archive": "tar-gz",
+          "bin": "lib/libpdfium.dylib",
+          "size_bytes": 3541773
+        },
+        "macos-x86_64": {
+          "url": "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/8111/pdfium-mac-x64.tgz",
+          "sha256": "e7fece4693f65a7e47f84fa38099068d573d4dcbd46b1a3c8d2c26581c308466",
+          "archive": "tar-gz",
+          "bin": "lib/libpdfium.dylib",
+          "size_bytes": 3749773
+        },
+        "windows-x86_64": {
+          "url": "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/8111/pdfium-win-x64.tgz",
+          "sha256": "3452d11031050ec65e57f180215b57b9e6d465e3fbedafa8a77ad90885c7d23e",
+          "archive": "tar-gz",
+          "bin": "bin/pdfium.dll",
+          "size_bytes": 3905343
+        }
+      }
     }
   }
 }

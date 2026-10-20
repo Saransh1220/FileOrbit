@@ -24,6 +24,7 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 url = "2.5.8"
 radial-packs = { version = "0.1.0", path = "../../crates/radial-packs", default-features = false }
+pdfium-render = "0.9.4"
 
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration

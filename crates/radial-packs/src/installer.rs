@@ -308,6 +308,12 @@ impl Installer {
             .iter()
             .map(|(id, installed)| {
                 let arg = catalog::engine(id).map(|e| e.version_arg).unwrap_or("--version");
+                if arg.is_empty() {
+                    // A library is loaded by the app, not run; being on disk is all that can be checked here.
+                    let ok = installed.path.is_file();
+                    let detail = if ok { format!("library, version {}", installed.version) } else { "file is missing".to_string() };
+                    return DoctorLine { engine: id.clone(), ok, detail };
+                }
                 match run_version(&installed.path, arg) {
                     Ok(line) => DoctorLine { engine: id.clone(), ok: true, detail: line },
                     Err(why) => DoctorLine { engine: id.clone(), ok: false, detail: why },

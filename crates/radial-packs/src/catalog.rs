@@ -9,6 +9,7 @@ pub struct EngineDef {
     /// Executable name without extension, as found on a system PATH.
     pub exe: &'static str,
     /// Argument that makes it print its version and exit (used by `doctor`).
+    /// Empty for a library (such as PDFium), which is loaded by the app, not run.
     pub version_arg: &'static str,
 }
 
@@ -24,9 +25,16 @@ pub const ENGINES: &[EngineDef] = &[
     EngineDef { id: "ffmpeg", name: "ffmpeg", exe: "ffmpeg", version_arg: "-version" },
     EngineDef { id: "pandoc", name: "pandoc", exe: "pandoc", version_arg: "--version" },
     EngineDef { id: "libreoffice", name: "LibreOffice", exe: "soffice", version_arg: "--version" },
+    EngineDef { id: "pdfium", name: "PDFium", exe: "pdfium", version_arg: "" },
 ];
 
 pub const PACKS: &[PackDef] = &[
+    PackDef {
+        id: "pdf",
+        title: "PDF tools",
+        description: "PDF pages to PNG, JPG and text; merge, reorder and combine",
+        engines: &["pdfium"],
+    },
     PackDef {
         id: "documents",
         title: "Documents",

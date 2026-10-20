@@ -7,6 +7,7 @@ pub mod download_text;
 pub mod engines;
 pub mod jobs;
 pub mod naming;
+pub mod pdf;
 pub mod pending;
 pub mod process;
 pub mod registry;
