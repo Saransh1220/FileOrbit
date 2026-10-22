@@ -83,6 +83,8 @@ jobs:
     needs: check-version
     if: ${{ !contains(github.ref_name, '-') }}
     runs-on: macos-latest
+    env:
+      HAVE_CERT: ${{ secrets.APPLE_CERTIFICATE != '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -107,7 +109,12 @@ jobs:
         run: npm ci
       # Tauri imports the certificate itself and, when the Apple ID variables are
       # set, submits the app to Apple's notary service and staples the ticket.
-      - name: Build universal app (signed and notarized when secrets exist)
+      #
+      # The signing variables must not exist at all when there is no certificate: GitHub passes a
+      # missing secret as an EMPTY variable, and Tauri then tries to import an empty certificate
+      # and fails. So there are two steps, and only one of them runs.
+      - name: Build universal app (signed and notarized)
+        if: ${{ env.HAVE_CERT == 'true' }}
         working-directory: app
         env:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
@@ -116,6 +123,13 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run tauri build -- --verbose --target universal-apple-darwin --bundles app,dmg 2>&1 | tee ../build.log
+      - name: Build universal app (unsigned)
+        if: ${{ env.HAVE_CERT != 'true' }}
+        working-directory: app
         shell: bash
         run: |
           set -o pipefail
