@@ -52,12 +52,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - { os: macos-latest, target: aarch64-apple-darwin, asset: radial-macos-aarch64, binary: radial }
-          - { os: macos-latest, target: x86_64-apple-darwin, asset: radial-macos-x86_64, binary: radial }
-          - { os: windows-latest, target: x86_64-pc-windows-msvc, asset: radial-windows-x86_64.exe, binary: radial.exe }
-    # Betas (a tag with a "-") are Windows only.
-    if: ${{ !contains(github.ref_name, '-') || matrix.os == 'windows-latest' }}
+        # Betas (a tag with a "-") are Windows only, so the Mac entries are left out for them.
+        # (The matrix cannot be used in a job-level `if`, so the list itself is chosen here.)
+        include: ${{ fromJSON(contains(github.ref_name, '-') && '[{"os":"windows-latest","target":"x86_64-pc-windows-msvc","asset":"radial-windows-x86_64.exe","binary":"radial.exe"}]' || '[{"os":"macos-latest","target":"aarch64-apple-darwin","asset":"radial-macos-aarch64","binary":"radial"},{"os":"macos-latest","target":"x86_64-apple-darwin","asset":"radial-macos-x86_64","binary":"radial"},{"os":"windows-latest","target":"x86_64-pc-windows-msvc","asset":"radial-windows-x86_64.exe","binary":"radial.exe"}]') }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
