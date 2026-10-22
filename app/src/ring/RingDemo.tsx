@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { demoParam, isClean } from "../demoParams";
 import { ToastView } from "../toast/ToastView";
 import type { JobUpdate } from "../toast/types";
 import "../toast/ToastSkins.css";
@@ -46,11 +47,11 @@ const bar = { display: "flex", gap: 6, flexWrap: "wrap" as const, marginBottom: 
 
 /** Dev-only playground (index.html#ring-demo) for judging the design without building the app. */
 export function RingDemo() {
-  const [set, setSet] = useState("mixed");
+  const [set, setSet] = useState(demoParam("set") ?? "mixed");
   const [hovered, setHovered] = useState<number | null>(0);
   const [confirmed, setConfirmed] = useState<number | null>(null);
-  const [bg, setBg] = useState("light wallpaper");
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [bg, setBg] = useState(demoParam("bg") ?? "light wallpaper");
+  const [theme, setTheme] = useState<"light" | "dark">(demoParam("theme") === "dark" ? "dark" : "light");
   const [design, setDesign] = useState("orbit");
   const [compare, setCompare] = useState(true);
   const [job, setJob] = useState("done");
@@ -87,6 +88,7 @@ export function RingDemo() {
 
   return (
     <div style={{ height: "100vh", overflow: "auto", padding: 20, boxSizing: "border-box", background: BACKGROUNDS[bg], fontFamily: "-apple-system, sans-serif" }}>
+      {!isClean() && <>
       <div style={bar}>
         {Object.keys(SETS).map((k) => (
           <button key={k} onClick={() => pick(k)}>{k}</button>
@@ -117,6 +119,7 @@ export function RingDemo() {
         <button onClick={() => setConfirmed(hovered ?? 0)}>drop</button>
         <button onClick={() => { setConfirmed(null); setReplay((n) => n + 1); }}>replay open</button>
       </div>
+      </>}
 
       {compare ? (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8 }}>

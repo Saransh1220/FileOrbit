@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { demoParam, isClean } from "../demoParams";
 import { ManagerView } from "./ManagerView";
 import type { SectionId } from "./sections";
 import type { HookStatus, Overview, PackUpdate } from "./types";
@@ -126,7 +127,7 @@ export function ManagerDemo() {
   const [updates, setUpdates] = useState("none");
   const [status, setStatus] = useState<HookStatus>("listening");
   const [empty, setEmpty] = useState(false);
-  const [page, setPage] = useState<SectionId>("converters");
+  const [page, setPage] = useState<SectionId>((demoParam("page") as SectionId | null) ?? "converters");
   const [problem, setProblem] = useState(false);
 
   // The real app sets this on <html> for every theme, "current" included.
@@ -142,14 +143,14 @@ export function ManagerDemo() {
 
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
-      <div style={bar}>
+      {!isClean() && <div style={bar}>
         {[...DESIGNS, OTHER_DESIGN].map(([id, label]) => choose(label, id, design, setDesign))}
         {PAGES.map((p) => choose(`page: ${p}`, p, page, (v) => setPage(v as SectionId)))}
         {Object.keys(UPDATES).map((k) => choose(`rows: ${k}`, k, updates, setUpdates))}
         {(["listening", "permission-denied", "starting"] as HookStatus[]).map((s) => choose(s, s, status, (v) => setStatus(v as HookStatus)))}
         <button onClick={() => setEmpty(!empty)} style={{ fontWeight: empty ? 700 : 400 }}>loading</button>
         <button onClick={() => setProblem(!problem)} style={{ fontWeight: problem ? 700 : 400 }}>problem</button>
-      </div>
+      </div>}
       <div style={{ flex: 1, minHeight: 0, display: "grid" }}>
         <ManagerView
           key={page}

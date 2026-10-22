@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { demoParam, isClean } from "../demoParams";
 import { limitedLoader } from "./thumbnails";
 import type { OpenedFile } from "./types";
 import { useWorkspace } from "./useWorkspace";
@@ -49,7 +50,8 @@ const mockLoad = limitedLoader(
   (_path, page) =>
     new Promise<string>((resolve) => {
       const { width, height } = SHAPES[page % SHAPES.length];
-      requestAnimationFrame(() => resolve(`data:image/svg+xml;utf8,${encodeURIComponent(pageSvg(page + 1, width, height))}`));
+      // Resolved at once (not on a frame) so a headless screenshot sees every picture.
+      resolve(`data:image/svg+xml;utf8,${encodeURIComponent(pageSvg(page + 1, width, height))}`);
     }),
   3,
 );
@@ -63,7 +65,7 @@ const leaf = (path: string) => path.split("\\").pop() ?? path;
 /** Dev-only playground (index.html#workspace-demo) for judging the page editor without building the app. */
 export function WorkspaceDemo() {
   const [design, setDesign] = useState("current");
-  const [mode, setMode] = useState<Mode>("ready");
+  const [mode, setMode] = useState<Mode>((demoParam("mode") as Mode | null) ?? "ready");
   const [fail, setFail] = useState(false);
   const [dropping, setDropping] = useState(false);
   const [dropped, setDropped] = useState<string[]>([]);
@@ -102,7 +104,7 @@ export function WorkspaceDemo() {
 
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
-      <div style={bar}>
+      {!isClean() && <div style={bar}>
         {DESIGNS.map(([id, label]) => pick(label, id, design, setDesign))}
         {(["ready", "two files", "loading", "problem"] as Mode[]).map((m) => pick(m, m, mode, (v) => setMode(v as Mode)))}
         <button onClick={() => setDropping(!dropping)} style={{ fontWeight: dropping ? 700 : 400 }}>
@@ -112,7 +114,7 @@ export function WorkspaceDemo() {
         <button onClick={() => setFail(!fail)} style={{ fontWeight: fail ? 700 : 400 }}>
           saving fails
         </button>
-      </div>
+      </div>}
       <div style={{ flex: 1, minHeight: 0, ["--workspace-height" as string]: "100%" }}>
         <WorkspaceView {...view} />
       </div>

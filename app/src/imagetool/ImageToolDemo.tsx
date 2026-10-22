@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import type { SaveStatus } from "./ActionBar";
 import { ImageToolView } from "./ImageToolView";
+import { demoParam, isClean } from "../demoParams";
+import { PRESETS } from "./presets";
 import { DEFAULT_SETTINGS, toJob, type Settings } from "./settings";
 import type { Estimate, ImageFile, Job } from "./types";
 
@@ -57,9 +59,9 @@ const bar = { display: "flex", gap: 6, flexWrap: "wrap" as const, padding: "10px
 /** Dev-only playground (index.html#imagetool-demo) for judging the picture tool without building the app. */
 export function ImageToolDemo() {
   const [design, setDesign] = useState("current");
-  const [count, setCount] = useState(1);
+  const [count, setCount] = useState(Number(demoParam("count")) || 1);
   const [selected, setSelected] = useState(0);
-  const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
+  const [settings, setSettings] = useState<Settings>(() => PRESETS.find((p) => p.id === demoParam("preset"))?.apply(DEFAULT_SETTINGS) ?? DEFAULT_SETTINGS);
   const [status, setStatus] = useState<SaveStatus>({ kind: "idle" });
 
   useEffect(() => {
@@ -79,14 +81,14 @@ export function ImageToolDemo() {
 
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
-      <div style={bar}>
+      {!isClean() && <div style={bar}>
         {DESIGNS.map((d) => pick(d, d === design, () => setDesign(d)))}
         {[1, 3].map((n) => pick(`${n} picture${n > 1 ? "s" : ""}`, n === count, () => (setCount(n), setSelected(0))))}
         {pick("saving", status.kind === "saving", () => setStatus({ kind: "saving", done: 1, total: 3 }))}
         {pick("saved", status.kind === "saved", () => setStatus({ kind: "saved", count, before: 4_210_000, after: 380_000, path: "/p/x.jpg" }))}
         {pick("error", status.kind === "error", () => setStatus({ kind: "error", message: "Could not read holiday-beach.png: the file is damaged." }))}
         {pick("idle", status.kind === "idle", () => setStatus({ kind: "idle" }))}
-      </div>
+      </div>}
       <div style={{ flex: 1, minHeight: 0, display: "grid" }}>
         <ImageToolView
           files={files}
