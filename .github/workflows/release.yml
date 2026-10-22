@@ -129,23 +129,9 @@ jobs:
         if: failure()
         shell: bash
         run: |
-          tail -n 40 build.log | sed 's/\[[0-9;]*m//g' | python3 -c "
-          import sys
-          text = sys.stdin.read().replace('%', '%25').replace('', '').replace('
-', '%0A')
-          print('::error title=macOS build log (last lines)::' + text)
-          "
-      - name: Package for the release
-        run: |
-          bundle="app/src-tauri/target/universal-apple-darwin/release/bundle"
-          mkdir -p out
-          # The zip is what install.sh unpacks; the dmg is for people who prefer dragging.
-          ditto -c -k --keepParent "$bundle/macos/Radial Convert.app" "out/Radial-Convert-macos-universal.zip"
-          cp "$bundle"/dmg/*.dmg "out/Radial-Convert-macos-universal.dmg"
-      - name: Show the signature and notarization status
-        run: |
-          codesign -dv --verbose=2 "app/src-tauri/target/universal-apple-darwin/release/bundle/macos/Radial Convert.app" 2>&1 | grep -E "Authority|Identifier|TeamIdentifier|flags" || true
-          spctl -a -vv "app/src-tauri/target/universal-apple-darwin/release/bundle/macos/Radial Convert.app" 2>&1 || true
+          # Strip colour codes (ESC [ ... m), escape the characters annotations treat specially, join the lines.
+          text=$(tail -n 40 build.log | sed -E $'s/\x1b\[[0-9;]*m//g' | sed 's/%/%25/g' | tr -d '\r' | awk '{printf "%s%%0A", $0}')
+          echo "::error title=macOS build log (last lines)::${text}"
       - uses: actions/upload-artifact@v4
         with:
           name: app-macos
