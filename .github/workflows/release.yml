@@ -4,18 +4,9 @@
 # app/src-tauri/tauri.conf.json). Run it by hand (Actions tab) to test the
 # builds without publishing anything.
 #
-# A tag with a suffix, like v0.1.0-beta.1, is a BETA: it builds the Windows installer and
-# the Windows `radial` command only (the macOS build is not verified for betas yet), and the
-# draft is marked as a pre-release, so /releases/latest and the one-line installers are not
-# affected. The part before the "-" must still equal the app version.
-#
-# macOS signing and notarization are driven by the secrets listed in
-# docs/RELEASE.md. Without them the macOS build still succeeds but is unsigned,
-# and the log says so. Windows installers are unsigned (users see a SmartScreen
-# warning until we add a certificate; see docs/RELEASE.md).
-#
-# Not yet exercised on GitHub's runners: this file was written and checked for
-# syntax locally only.
+# A tag with a suffix, like v0.1.0-beta.1, is a BETA: it builds everything like a normal
+# release, but the draft is marked as a pre-release, so /releases/latest and the one-line
+# installers are not affected. The part before the "-" must still equal the app version.
 
 name: release
 
@@ -52,9 +43,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Betas (a tag with a "-") are Windows only, so the Mac entries are left out for them.
-        # (The matrix cannot be used in a job-level `if`, so the list itself is chosen here.)
-        include: ${{ fromJSON(contains(github.ref_name, '-') && '[{"os":"windows-latest","target":"x86_64-pc-windows-msvc","asset":"radial-windows-x86_64.exe","binary":"radial.exe"}]' || '[{"os":"macos-latest","target":"aarch64-apple-darwin","asset":"radial-macos-aarch64","binary":"radial"},{"os":"macos-latest","target":"x86_64-apple-darwin","asset":"radial-macos-x86_64","binary":"radial"},{"os":"windows-latest","target":"x86_64-pc-windows-msvc","asset":"radial-windows-x86_64.exe","binary":"radial.exe"}]') }}
+        include:
+          - { os: macos-latest, target: aarch64-apple-darwin, asset: radial-macos-aarch64, binary: radial }
+          - { os: macos-latest, target: x86_64-apple-darwin, asset: radial-macos-x86_64, binary: radial }
+          - { os: windows-latest, target: x86_64-pc-windows-msvc, asset: radial-windows-x86_64.exe, binary: radial.exe }
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -81,7 +73,6 @@ jobs:
 
   app-macos:
     needs: check-version
-    if: ${{ !contains(github.ref_name, '-') }}
     runs-on: macos-latest
     env:
       HAVE_CERT: ${{ secrets.APPLE_CERTIFICATE != '' }}
@@ -191,8 +182,8 @@ jobs:
 
   release:
     # Only for real tags; a manual run stops after the builds above.
-    # `!cancelled()` and the result checks let a beta go ahead although the macOS job was skipped.
-    if: ${{ !cancelled() && startsWith(github.ref, 'refs/tags/v') && needs.cli.result == 'success' && needs.app-windows.result == 'success' && (needs.app-macos.result == 'success' || (contains(github.ref_name, '-') && needs.app-macos.result == 'skipped')) }}
+    # Only for real tags; a manual run stops after the builds above.
+    if: startsWith(github.ref, 'refs/tags/v')
     needs: [cli, app-macos, app-windows]
     runs-on: ubuntu-latest
     steps:
@@ -203,9 +194,7 @@ jobs:
           merge-multiple: true
       - name: Add the install scripts, pointed at this repository
         run: |
-          cp scripts/install.ps1 dist/
-          # The macOS installer only belongs to a full release (a beta has no macOS files).
-          if [[ "$GITHUB_REF_NAME" != *-* ]]; then cp scripts/install.sh dist/; fi
+          cp scripts/install.sh scripts/install.ps1 dist/
           # The scripts ship with a placeholder; stamp in the real repo so nobody edits them by hand.
           sed -i "s#OWNER/REPO#$GITHUB_REPOSITORY#g" dist/install.*
           if grep -q "OWNER/REPO" dist/install.*; then echo "placeholder left in an install script" >&2; exit 1; fi
@@ -225,7 +214,7 @@ jobs:
           notes=THIRD_PARTY_NOTICES.md
           if [[ "$GITHUB_REF_NAME" == *-* ]]; then
             flags="--prerelease"
-            title="Radial Convert $GITHUB_REF_NAME (Windows beta)"
+            title="Radial Convert $GITHUB_REF_NAME (beta)"
             notes=docs/BETA_NOTES.md
           fi
           gh release create "$GITHUB_REF_NAME" dist/* \
