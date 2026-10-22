@@ -119,7 +119,22 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: npm run tauri build -- --target universal-apple-darwin --bundles app,dmg
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run tauri build -- --verbose --target universal-apple-darwin --bundles app,dmg 2>&1 | tee ../build.log
+      # GitHub only shows a job's log to people who are signed in, but annotations are public.
+      # So when the build fails, repeat the end of its log as an annotation to make the cause visible.
+      - name: Show why the macOS build failed
+        if: failure()
+        shell: bash
+        run: |
+          tail -n 40 build.log | sed 's/\[[0-9;]*m//g' | python3 -c "
+          import sys
+          text = sys.stdin.read().replace('%', '%25').replace('', '').replace('
+', '%0A')
+          print('::error title=macOS build log (last lines)::' + text)
+          "
       - name: Package for the release
         run: |
           bundle="app/src-tauri/target/universal-apple-darwin/release/bundle"
