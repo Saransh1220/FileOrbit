@@ -74,6 +74,10 @@ The mirror release is marked "not latest" so it never shadows the app release. I
 5. **Smoke test on a clean machine** before publishing (see below).
 6. Click **Publish release**. The one-line installers now work, because `/releases/latest` points at it.
 
+### Betas (Windows only)
+
+Tag with a suffix: `git tag v0.1.0-beta.1 && git push origin v0.1.0-beta.1`. The part before the `-` must equal the app version. A beta builds only the Windows installer and the Windows `radial` command, creates a **draft pre-release** titled "(Windows beta)" with `docs/BETA_NOTES.md` as its text, and leaves `/releases/latest` and the one-line installers untouched. Testers download `Radial-Convert-windows-x86_64-setup.exe` from the Releases page. Publish it from the draft page after checking the files and `SHA256SUMS`.
+
 To try the builds without releasing, run the workflow by hand from the Actions tab: it builds everything and stops before creating a release.
 
 ## Smoke test on a clean machine

@@ -4,6 +4,11 @@
 # app/src-tauri/tauri.conf.json). Run it by hand (Actions tab) to test the
 # builds without publishing anything.
 #
+# A tag with a suffix, like v0.1.0-beta.1, is a BETA: it builds the Windows installer and
+# the Windows `radial` command only (the macOS build is not verified for betas yet), and the
+# draft is marked as a pre-release, so /releases/latest and the one-line installers are not
+# affected. The part before the "-" must still equal the app version.
+#
 # macOS signing and notarization are driven by the secrets listed in
 # docs/RELEASE.md. Without them the macOS build still succeeds but is unsigned,
 # and the log says so. Windows installers are unsigned (users see a SmartScreen
@@ -34,7 +39,9 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           version=$(python3 -c "import json; print(json.load(open('app/src-tauri/tauri.conf.json'))['version'])")
-          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+          # v0.1.0-beta.1 is a beta of 0.1.0: compare without the suffix.
+          tag_version="${GITHUB_REF_NAME%%-*}"
+          if [ "v$version" != "$tag_version" ]; then
             echo "Tag $GITHUB_REF_NAME does not match tauri.conf.json version v$version" >&2
             exit 1
           fi
@@ -49,6 +56,8 @@ jobs:
           - { os: macos-latest, target: aarch64-apple-darwin, asset: radial-macos-aarch64, binary: radial }
           - { os: macos-latest, target: x86_64-apple-darwin, asset: radial-macos-x86_64, binary: radial }
           - { os: windows-latest, target: x86_64-pc-windows-msvc, asset: radial-windows-x86_64.exe, binary: radial.exe }
+    # Betas (a tag with a "-") are Windows only.
+    if: ${{ !contains(github.ref_name, '-') || matrix.os == 'windows-latest' }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -75,6 +84,7 @@ jobs:
 
   app-macos:
     needs: check-version
+    if: ${{ !contains(github.ref_name, '-') }}
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -158,7 +168,8 @@ jobs:
 
   release:
     # Only for real tags; a manual run stops after the builds above.
-    if: startsWith(github.ref, 'refs/tags/v')
+    # `!cancelled()` and the result checks let a beta go ahead although the macOS job was skipped.
+    if: ${{ !cancelled() && startsWith(github.ref, 'refs/tags/v') && needs.cli.result == 'success' && needs.app-windows.result == 'success' && (needs.app-macos.result == 'success' || (contains(github.ref_name, '-') && needs.app-macos.result == 'skipped')) }}
     needs: [cli, app-macos, app-windows]
     runs-on: ubuntu-latest
     steps:
@@ -169,10 +180,12 @@ jobs:
           merge-multiple: true
       - name: Add the install scripts, pointed at this repository
         run: |
-          cp scripts/install.sh scripts/install.ps1 dist/
+          cp scripts/install.ps1 dist/
+          # The macOS installer only belongs to a full release (a beta has no macOS files).
+          if [[ "$GITHUB_REF_NAME" != *-* ]]; then cp scripts/install.sh dist/; fi
           # The scripts ship with a placeholder; stamp in the real repo so nobody edits them by hand.
-          sed -i "s#OWNER/REPO#$GITHUB_REPOSITORY#g" dist/install.sh dist/install.ps1
-          if grep -q "OWNER/REPO" dist/install.sh dist/install.ps1; then echo "placeholder left in an install script" >&2; exit 1; fi
+          sed -i "s#OWNER/REPO#$GITHUB_REPOSITORY#g" dist/install.*
+          if grep -q "OWNER/REPO" dist/install.*; then echo "placeholder left in an install script" >&2; exit 1; fi
       - name: Checksums
         working-directory: dist
         run: |
@@ -184,6 +197,14 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # A draft: nothing is public until someone reviews the files and clicks Publish.
+          flags=""
+          title="Radial Convert $GITHUB_REF_NAME"
+          notes=THIRD_PARTY_NOTICES.md
+          if [[ "$GITHUB_REF_NAME" == *-* ]]; then
+            flags="--prerelease"
+            title="Radial Convert $GITHUB_REF_NAME (Windows beta)"
+            notes=docs/BETA_NOTES.md
+          fi
           gh release create "$GITHUB_REF_NAME" dist/* \
-            --draft --generate-notes --title "Radial Convert $GITHUB_REF_NAME" \
-            --notes-file THIRD_PARTY_NOTICES.md
+            --draft $flags --generate-notes --title "$title" \
+            --notes-file "$notes"
