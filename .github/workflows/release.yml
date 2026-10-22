@@ -136,6 +136,17 @@ jobs:
           npm run tauri build -- --verbose --target universal-apple-darwin --bundles app,dmg 2>&1 | tee ../build.log
       # GitHub only shows a job's log to people who are signed in, but annotations are public.
       # So when the build fails, repeat the end of its log as an annotation to make the cause visible.
+      - name: Package for the release
+        run: |
+          bundle="app/src-tauri/target/universal-apple-darwin/release/bundle"
+          mkdir -p out
+          # The zip is what install.sh unpacks; the dmg is for people who prefer dragging.
+          ditto -c -k --keepParent "$bundle/macos/Radial Convert.app" "out/Radial-Convert-macos-universal.zip"
+          cp "$bundle"/dmg/*.dmg "out/Radial-Convert-macos-universal.dmg"
+      - name: Show the signature and notarization status
+        run: |
+          codesign -dv --verbose=2 "app/src-tauri/target/universal-apple-darwin/release/bundle/macos/Radial Convert.app" 2>&1 | grep -E "Authority|Identifier|TeamIdentifier|flags" || true
+          spctl -a -vv "app/src-tauri/target/universal-apple-darwin/release/bundle/macos/Radial Convert.app" 2>&1 || true
       - name: Show why the macOS build failed
         if: failure()
         shell: bash
