@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!--
+    The app is built with the hardened runtime, which by default refuses to load any
+    library not signed by Apple or by the same developer. The PDF tools pack downloads
+    PDFium (libpdfium.dylib), which is signed by its publisher, so without this the
+    editor fails with "code signature ... not valid for use in process".
+    This is the standard entitlement for apps that load add-on libraries, and it is
+    accepted for notarized apps.
+  -->
+  <key>com.apple.security.cs.disable-library-validation</key>
+  <true/>
+</dict>
+</plist>

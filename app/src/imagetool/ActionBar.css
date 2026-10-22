@@ -1,0 +1,66 @@
+.it .actions {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 18px;
+  border-top: var(--mg-border) solid var(--mg-line);
+  background: var(--mg-side);
+}
+
+.it .actions .state {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  font-size: 12.5px;
+  color: var(--mg-muted);
+}
+
+.it .actions .faint {
+  color: var(--mg-faint);
+}
+
+.it .actions .problem {
+  color: var(--mg-danger);
+}
+
+.it .actions .link {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--mg-accent-text);
+  background: none;
+  cursor: pointer;
+}
+
+.it .actions .save {
+  appearance: none;
+  min-height: 34px;
+  padding: 0 18px;
+  border: var(--mg-border) solid var(--mg-primary-border);
+  border-radius: var(--mg-radius-sm);
+  font: inherit;
+  font-weight: 650;
+  color: var(--mg-on-accent);
+  background: var(--mg-accent);
+  box-shadow: var(--mg-primary-shadow);
+  cursor: pointer;
+  transition: background 120ms ease, transform 120ms ease;
+}
+
+.it .actions .save:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--mg-accent) 88%, #000);
+}
+
+.it .actions .save:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.it .actions .save:disabled {
+  opacity: 0.45;
+  cursor: default;
+}

@@ -3,6 +3,7 @@
 
 use crate::design;
 use crate::engine::jobs::progress_of;
+use radial_packs::availability::pack_availability;
 use radial_packs::catalog::{self, PACKS};
 use radial_packs::installer::{Event, Installer};
 use radial_packs::state::Source;
@@ -56,7 +57,10 @@ pub struct PackInfo {
     title: &'static str,
     description: &'static str,
     engines: Vec<EngineInfo>,
+    /// Usable now: installed by us, or every program it needs is already on this computer.
     installed: bool,
+    /// Installed by us, so it can be removed. False when only the computer's own copy is used.
+    managed: bool,
     /// Download size on this platform; `None` when nothing is published for it.
     download_bytes: Option<u64>,
     /// Space the pack's programs take on disk (shared programs count for each pack using them).
@@ -109,19 +113,17 @@ pub fn get_overview(app: AppHandle) -> Result<Overview, String> {
     let packs: Vec<PackInfo> = PACKS
         .iter()
         .map(|pack| {
-            let engines = pack
+            let availability = pack_availability(pack, &state, &radial_packs::system::find);
+            let engines = availability
                 .engines
                 .iter()
-                .map(|id| {
-                    let installed = state.engines.get(*id);
-                    EngineInfo {
-                        name: catalog::engine(id).map(|e| e.name).unwrap_or(id).to_string(),
-                        version: installed.map(|e| e.version.clone()),
-                        source: installed.map(|e| match e.source {
-                            Source::Downloaded => "downloaded",
-                            Source::System => "system",
-                        }),
-                    }
+                .map(|e| EngineInfo {
+                    name: catalog::engine(e.id).map(|d| d.name).unwrap_or(e.id).to_string(),
+                    version: e.version.clone(),
+                    source: e.source.map(|source| match source {
+                        Source::Downloaded => "downloaded",
+                        Source::System => "system",
+                    }),
                 })
                 .collect();
             let shared_with = PACKS
@@ -134,7 +136,8 @@ pub fn get_overview(app: AppHandle) -> Result<Overview, String> {
                 title: pack.title,
                 description: pack.description,
                 engines,
-                installed: state.packs.contains(pack.id),
+                installed: availability.installed,
+                managed: availability.managed,
                 download_bytes: installer.pack_download_bytes(pack.id),
                 disk_bytes: pack.engines.iter().map(|e| installer.engine_disk_bytes(e)).sum(),
                 shared_with,

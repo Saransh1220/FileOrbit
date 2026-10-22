@@ -1,0 +1,38 @@
+.mgr .meter {
+  box-sizing: border-box;
+  height: var(--mg-meter-height);
+  border: var(--mg-border) solid var(--mg-meter-border);
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--mg-accent) 16%, var(--mg-surface));
+}
+
+.mgr .meter i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--mg-accent);
+  transition: width 160ms linear;
+}
+
+.mgr .meter i.indeterminate {
+  width: 35%;
+  animation: mgr-slide 1.1s ease-in-out infinite;
+}
+
+@keyframes mgr-slide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(300%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mgr .meter i.indeterminate {
+    animation: none;
+    width: 100%;
+    opacity: 0.5;
+  }
+}

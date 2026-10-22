@@ -3,9 +3,11 @@
 use clap::{Parser, Subcommand};
 use dialoguer::{theme::ColorfulTheme, Confirm, MultiSelect};
 use indicatif::{ProgressBar, ProgressStyle};
+use radial_packs::availability::pack_availability;
 use radial_packs::catalog::PACKS;
 use radial_packs::installer::{Action, Event, Installer, Plan};
 use radial_packs::state::{Source, State};
+use radial_packs::system;
 use std::io::IsTerminal;
 use std::process::ExitCode;
 
@@ -80,8 +82,13 @@ fn list(installer: &Installer) -> Result<(), String> {
     let state = installer.state()?;
     println!("Install folder: {}\n", installer.home().display());
     for pack in PACKS {
-        let mark = if state.packs.contains(pack.id) { "installed" } else { "-" };
-        println!("  {:<10} {:<14} {}  [needs {}]", pack.id, mark, pack.description, pack.engines.join(", "));
+        let a = pack_availability(pack, &state, &system::find);
+        let mark = match (a.managed, a.installed) {
+            (true, _) => "installed",
+            (false, true) => "on this computer",
+            (false, false) => "-",
+        };
+        println!("  {:<10} {:<18} {}  [needs {}]", pack.id, mark, pack.description, pack.engines.join(", "));
     }
     println!("\nInstalled engines:");
     if state.engines.is_empty() {
@@ -186,6 +193,7 @@ fn install(installer: &Installer, packs: Vec<String>, all: bool, yes: bool) -> R
             bar.set_length(total.unwrap_or(done));
             bar.set_position(done);
         }
+        Event::Connecting { engine } => println!("{engine}: connecting to the download server"),
         Event::Verifying { engine } => {
             bar.finish_and_clear();
             println!("{engine}: verifying checksum");

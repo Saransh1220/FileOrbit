@@ -18,9 +18,12 @@ export interface HubText {
 
 /** The id of the wedge (and hub drop) that opens the page editor; must match selection.rs. */
 export const ORGANIZE = "organize";
+/** The id of the wedge that opens the picture tool; must match selection.rs. */
+export const RESIZE = "resize";
 
 function captionFor(wedge: Wedge): string {
   if (wedge.id === ORGANIZE) return "Reorder, rotate, delete";
+  if (wedge.id === RESIZE) return "Resize or compress";
   return wedge.tool ? "Into one PDF" : "Convert to";
 }
 

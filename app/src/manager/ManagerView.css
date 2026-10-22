@@ -1,185 +1,40 @@
-/* The manager window: one column, hairlines instead of boxes, type does the work.
-   Every color comes from --m-* tokens so a theme can restyle it (ManagerSkins.css). */
-.manager {
-  --m-bg: var(--app-bg);
-  --m-fg: var(--fg);
-  --m-muted: var(--fg-muted);
-  --m-faint: color-mix(in srgb, var(--fg-muted) 75%, var(--app-bg));
-  --m-line: var(--hairline);
-  --m-accent: var(--accent);
-  --m-on-accent: var(--on-accent);
-  --m-ok: var(--ok);
-  --m-danger: var(--err);
-  --m-radius: 7px;
+/* The window frame: the sidebar column and the page column. Everything else lives with its own component. */
+html:has(.mgr),
+body:has(.mgr),
+#root:has(.mgr) {
+  height: 100%;
+  margin: 0;
+}
 
-  box-sizing: border-box;
-  min-height: 100vh;
-  padding: 36px max(28px, calc((100vw - 580px) / 2)) 48px;
-  color: var(--m-fg);
-  background: var(--m-bg);
-  font-family: var(--font);
-  font-size: 14px;
-  line-height: 1.5;
+.mgr {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+  font-family: var(--mg-font);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--mg-fg);
+  background: var(--mg-bg);
   -webkit-font-smoothing: antialiased;
 }
 
-.manager header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.manager h1 {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 650;
-  letter-spacing: -0.015em;
-}
-
-.manager .status {
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12.5px;
-  color: var(--m-muted);
-}
-
-.manager .status i {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--m-faint);
-}
-
-.manager .status.listening i {
-  background: var(--m-ok);
-}
-
-.manager .status.permission-denied i,
-.manager .status.error i {
-  background: var(--m-danger);
-}
-
-.manager .help {
-  margin: 10px 0 0;
-  font-size: 13px;
-  color: var(--m-danger);
-}
-
-.manager .note {
-  margin: 10px 0 0;
-  max-width: 52ch;
-  font-size: 12.5px;
-  color: var(--m-faint);
-}
-
-.manager section {
-  margin-top: 40px;
-}
-
-.manager h2 {
-  margin: 0;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--m-line);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: var(--m-muted);
-}
-
-.manager .intro {
-  margin: 12px 0 0;
-  max-width: 46ch;
-  font-size: 13px;
-  color: var(--m-muted);
-}
-
-.manager .loading {
-  margin: 20px 0 0;
-  color: var(--m-faint);
-}
-
-.manager .problem {
-  margin: 12px 0 0;
-  font-size: 13px;
-  color: var(--m-danger);
-  overflow-wrap: anywhere;
-}
-
-.manager ul {
-  margin: 4px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-/* Label, value and an optional action on one hairline row. */
-.manager .line {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  min-height: 46px;
-  border-bottom: 1px solid var(--m-line);
-  font-size: 13.5px;
-}
-
-.manager .line .label {
-  flex: none;
-  width: 150px;
-  color: var(--m-fg);
-}
-
-.manager .line .value {
-  flex: 1;
+.mgr main {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--m-muted);
-  font-variant-numeric: tabular-nums;
+  overflow-y: auto;
+  padding: 30px 36px 44px;
+  animation: mgr-in 160ms ease-out;
 }
 
-.manager .line .end {
-  flex: none;
-  display: flex;
-  align-items: center;
+@keyframes mgr-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
 }
 
-.manager button.link {
-  padding: 4px 2px;
-  border: none;
-  background: none;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--m-accent);
-  cursor: pointer;
-}
-
-.manager button.link:hover {
-  text-decoration: underline;
-}
-
-.manager select {
-  padding: 6px 28px 6px 10px;
-  border: 1px solid var(--m-line);
-  border-radius: var(--m-radius);
-  font: inherit;
-  font-size: 13px;
-  color: var(--m-fg);
-  background-color: transparent;
-  cursor: pointer;
-}
-
-.manager select:focus-visible,
-.manager button:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--m-accent) 55%, transparent);
-  outline-offset: 2px;
-}
-
-.manager select option {
-  color: #111;
-  background: #fff;
+@media (prefers-reduced-motion: reduce) {
+  .mgr main {
+    animation: none;
+  }
 }

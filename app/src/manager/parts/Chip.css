@@ -1,0 +1,35 @@
+.mgr .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 9px;
+  border: var(--mg-border) solid transparent;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+  color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 13%, var(--mg-surface));
+}
+
+.mgr .chip.ok {
+  --tone: var(--mg-ok);
+}
+.mgr .chip.warn {
+  --tone: var(--mg-warn);
+}
+.mgr .chip.danger {
+  --tone: var(--mg-danger);
+}
+.mgr .chip.neutral {
+  --tone: var(--mg-muted);
+}
+
+.mgr .chip::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}

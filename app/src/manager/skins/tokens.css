@@ -1,0 +1,106 @@
+/*
+  Colors and shapes for the manager window, in one place per theme.
+  Components only read these --mg-* tokens and never mention a theme, so a new
+  theme is one more block here. Each block sits on `[data-design="x"]`, which is
+  set on <html> for the window and on a preview swatch for its own miniature.
+
+  Themes not listed here (Petals, Compass, Fan, Hex) fall back to "current".
+*/
+
+/* ---- Current: follows the OS light or dark setting (the values come from theme.css) ---- */
+:root,
+[data-design="current"] {
+  --mg-bg: var(--app-bg);
+  --mg-side: color-mix(in srgb, var(--app-bg) 93%, #000);
+  --mg-surface: var(--surface);
+  --mg-line: var(--hairline);
+  --mg-fg: var(--fg);
+  --mg-muted: var(--fg-muted);
+  --mg-faint: color-mix(in srgb, var(--fg-muted) 80%, var(--app-bg));
+  --mg-accent: var(--accent);
+  /* An accent that stays readable as text or an outline-free icon on a surface (a fill color may not). */
+  --mg-accent-text: var(--accent);
+  --mg-on-accent: var(--on-accent);
+  --mg-ok: var(--ok);
+  --mg-warn: #bf8d3f;
+  --mg-danger: var(--err);
+  --mg-active: color-mix(in srgb, var(--accent) 13%, transparent);
+  --mg-active-fg: var(--fg);
+  --mg-active-border: transparent;
+  --mg-radius: 10px;
+  --mg-radius-sm: 7px;
+  --mg-border: 1px;
+  --mg-meter-border: transparent;
+  --mg-meter-height: 4px;
+  --mg-shadow: 0 1px 2px rgba(20, 24, 36, 0.05);
+  --mg-primary-border: transparent;
+  --mg-primary-shadow: none;
+  --mg-heading-weight: 650;
+  --mg-heading-tracking: -0.01em;
+  --mg-font: var(--font);
+  --mg-heading-font: var(--mg-font);
+}
+
+/* ---- Bold: dark graphite, blue accent, heavy headings ---- */
+[data-design="bold"] {
+  --mg-bg: oklch(0.21 0.012 265);
+  --mg-side: oklch(0.175 0.012 265);
+  --mg-surface: oklch(0.255 0.014 265);
+  --mg-line: oklch(0.33 0.014 265);
+  --mg-fg: oklch(0.96 0.004 265);
+  --mg-muted: oklch(0.76 0.01 265);
+  --mg-faint: oklch(0.62 0.01 265);
+  --mg-accent: oklch(0.66 0.17 262);
+  --mg-accent-text: oklch(0.74 0.14 262);
+  --mg-on-accent: #fff;
+  --mg-ok: oklch(0.74 0.12 160);
+  --mg-warn: oklch(0.78 0.13 85);
+  --mg-danger: oklch(0.72 0.14 25);
+  --mg-active: color-mix(in srgb, oklch(0.66 0.17 262) 20%, transparent);
+  --mg-active-fg: oklch(0.96 0.004 265);
+  --mg-active-border: transparent;
+  --mg-radius: 8px;
+  --mg-radius-sm: 6px;
+  --mg-border: 1px;
+  --mg-meter-border: transparent;
+  --mg-meter-height: 4px;
+  --mg-shadow: none;
+  --mg-primary-border: transparent;
+  --mg-primary-shadow: none;
+  --mg-heading-weight: 800;
+  --mg-heading-tracking: -0.025em;
+  --mg-font: var(--font);
+  --mg-heading-font: var(--mg-font);
+}
+
+/* ---- Brutal: pale yellow, black outlines, hard shadows, square-ish corners ---- */
+[data-design="brutal"] {
+  --mg-bg: oklch(0.965 0.06 95);
+  --mg-side: oklch(0.99 0.02 95);
+  --mg-surface: #fff;
+  --mg-line: oklch(0.15 0 0);
+  --mg-fg: oklch(0.15 0 0);
+  --mg-muted: oklch(0.33 0 0);
+  --mg-faint: oklch(0.45 0 0);
+  --mg-accent: oklch(0.9 0.17 95);
+  --mg-accent-text: oklch(0.15 0 0);
+  --mg-on-accent: oklch(0.15 0 0);
+  --mg-ok: oklch(0.42 0.12 150);
+  --mg-warn: oklch(0.5 0.13 70);
+  --mg-danger: oklch(0.45 0.18 27);
+  --mg-active: oklch(0.9 0.17 95);
+  --mg-active-fg: oklch(0.15 0 0);
+  --mg-active-border: oklch(0.15 0 0);
+  --mg-radius: 4px;
+  --mg-radius-sm: 2px;
+  --mg-border: 2px;
+  --mg-meter-border: oklch(0.15 0 0);
+  --mg-meter-height: 10px;
+  --mg-shadow: 3px 3px 0 oklch(0.15 0 0);
+  --mg-primary-border: oklch(0.15 0 0);
+  --mg-primary-shadow: 2px 2px 0 oklch(0.15 0 0);
+  --mg-heading-weight: 900;
+  --mg-heading-tracking: 0;
+  --mg-font: "Archivo", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+  --mg-heading-font: "Archivo Black", "Arial Black", "Segoe UI", sans-serif;
+}

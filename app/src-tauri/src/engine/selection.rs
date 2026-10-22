@@ -13,6 +13,9 @@ pub const MERGE: &str = "merge";
 /// The action id for "open this PDF in the page editor".
 pub const ORGANIZE: &str = "organize";
 
+/// The action id for "open these pictures in the resize and compress window".
+pub const PICTURE_TOOL: &str = "resize";
+
 /// Picture formats that can become a PDF page.
 const PICTURE_EXTS: &[&str] = &["png", "jpg", "gif", "tiff", "bmp", "webp"];
 
@@ -72,6 +75,10 @@ pub fn targets_for_types(exts: &[String], supported: impl Fn(Engine, &str) -> bo
     // The page editor takes any number of PDFs (several open side by side in one editor).
     if exts.iter().all(|e| e == "pdf") {
         wedges.push(Target { id: ORGANIZE.to_string(), label: "ORGANIZE".to_string(), tool: true });
+    }
+    // Pictures can be resized and compressed, one or many together.
+    if exts.iter().all(|e| is_picture(e)) {
+        wedges.push(Target { id: PICTURE_TOOL.to_string(), label: "RESIZE".to_string(), tool: true });
     }
     wedges
 }
@@ -200,5 +207,22 @@ mod tests {
     fn the_selection_is_named_for_the_hub() {
         assert_eq!(selection_name(&[PathBuf::from("/a/x.pdf")]), "x.pdf");
         assert_eq!(selection_name(&[PathBuf::from("/a/x.pdf"), PathBuf::from("/a/y.pdf")]), "2 files");
+    }
+
+    #[test]
+    fn pictures_are_offered_the_resize_window_last_one_or_many() {
+        for list in [vec!["png"], vec!["jpg", "png"], vec!["webp", "webp", "gif"]] {
+            let wedges = targets_for_types(&exts(&list), |_, _| true);
+            let last = wedges.last().unwrap();
+            assert_eq!((last.id.as_str(), last.tool), (PICTURE_TOOL, true), "{list:?}");
+            assert!(wedges.len() <= registry::MAX_TARGETS);
+        }
+    }
+
+    #[test]
+    fn only_pictures_are_offered_the_resize_window() {
+        assert!(!ids(&["pdf"]).contains(&PICTURE_TOOL.to_string()));
+        assert!(!ids(&["pdf", "png"]).contains(&PICTURE_TOOL.to_string()));
+        assert!(!ids(&["mp3"]).contains(&PICTURE_TOOL.to_string()));
     }
 }

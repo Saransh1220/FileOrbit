@@ -1,0 +1,44 @@
+.mgr .row-group {
+  border: var(--mg-border) solid var(--mg-line);
+  border-radius: var(--mg-radius);
+  background: var(--mg-surface);
+  box-shadow: var(--mg-shadow);
+}
+
+.mgr .row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 52px;
+  padding: 10px 16px;
+}
+
+.mgr .row + .row {
+  border-top: var(--mg-border) solid var(--mg-line);
+}
+
+.mgr .row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.mgr .row-label {
+  font-weight: 600;
+}
+
+.mgr .row-hint {
+  color: var(--mg-muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.mgr .row-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+  color: var(--mg-muted);
+}

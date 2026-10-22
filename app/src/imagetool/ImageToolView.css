@@ -1,0 +1,38 @@
+/* The window frame: list | preview | settings, with the action bar underneath. */
+html:has(.it),
+body:has(.it),
+#root:has(.it) {
+  height: 100%;
+  margin: 0;
+}
+
+.it {
+  display: grid;
+  grid-template-columns: 224px minmax(0, 1fr) 340px;
+  grid-template-rows: minmax(0, 1fr) auto;
+  height: 100%;
+  min-height: 0;
+  font-family: var(--mg-font);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--mg-fg);
+  background: var(--mg-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+.it > main {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+}
+
+.it .settings {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-height: 0;
+  padding: 16px 16px 20px;
+  overflow-y: auto;
+  border-left: var(--mg-border) solid var(--mg-line);
+  background: var(--mg-bg);
+}

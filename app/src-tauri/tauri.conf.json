@@ -16,10 +16,10 @@
         "label": "main",
         "title": "Radial Convert",
         "visible": false,
-        "width": 640,
-        "height": 760,
-        "minWidth": 480,
-        "minHeight": 520,
+        "width": 860,
+        "height": 580,
+        "minWidth": 720,
+        "minHeight": 480,
         "center": true
       },
       {
@@ -66,6 +66,9 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "macOS": {
+      "entitlements": "Entitlements.plist"
+    }
   }
 }

@@ -1,0 +1,45 @@
+.mgr .summary {
+  margin: 0 0 18px;
+  color: var(--mg-muted);
+}
+
+.mgr .summary strong {
+  color: var(--mg-fg);
+}
+
+.mgr .pack-group + .pack-group {
+  margin-top: 26px;
+}
+
+.mgr .pack-group h2 {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mg-faint);
+}
+
+.mgr .pack-group ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: var(--mg-border) solid var(--mg-line);
+  border-radius: var(--mg-radius);
+  background: var(--mg-surface);
+  box-shadow: var(--mg-shadow);
+}
+
+.mgr .banner {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border: var(--mg-border) solid color-mix(in srgb, var(--mg-danger) 45%, var(--mg-line));
+  border-radius: var(--mg-radius-sm);
+  color: var(--mg-danger);
+  background: color-mix(in srgb, var(--mg-danger) 8%, var(--mg-surface));
+  overflow-wrap: anywhere;
+}
+
+.mgr .loading {
+  color: var(--mg-muted);
+}

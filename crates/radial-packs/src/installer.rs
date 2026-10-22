@@ -10,6 +10,9 @@ use std::process::{Command, Stdio};
 /// Progress notifications; the CLI turns these into progress bars.
 #[derive(Debug, Clone)]
 pub enum Event {
+    /// About to contact the download server. The wait before the first byte can be long on a
+    /// bad network, so this lets the UI say so instead of sitting on "Starting".
+    Connecting { engine: String },
     Downloading { engine: String, done: u64, total: Option<u64> },
     Verifying { engine: String },
     /// A verified download from an earlier attempt is reused instead of fetching it again.
@@ -201,6 +204,7 @@ impl Installer {
                 // One already as large as expected is complete and only needs checking.
                 let already_whole = std::fs::metadata(&in_progress).is_ok_and(|m| m.len() == artifact.size_bytes);
                 if !already_whole {
+                    on_event(Event::Connecting { engine: engine.to_string() });
                     fetch::download(&artifact.url, &in_progress, &mut |done, total| {
                         on_event(Event::Downloading { engine: engine.to_string(), done, total });
                     })?;

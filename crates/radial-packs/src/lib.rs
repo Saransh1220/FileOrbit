@@ -1,6 +1,7 @@
 //! Modular converter installs: engines, the packs that need them, and the
 //! installer that downloads, verifies and records them.
 
+pub mod availability;
 pub mod catalog;
 pub mod extract;
 pub mod fetch;

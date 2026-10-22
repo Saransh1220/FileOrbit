@@ -1,0 +1,75 @@
+.mgr .pack {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  align-items: center;
+  column-gap: 14px;
+  padding: 14px 16px;
+}
+
+.mgr .pack + .pack {
+  border-top: var(--mg-border) solid var(--mg-line);
+}
+
+.mgr .tile {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: var(--mg-border) solid color-mix(in srgb, var(--tint) 30%, var(--mg-line));
+  border-radius: var(--mg-radius);
+  color: color-mix(in srgb, var(--tint) 88%, var(--mg-fg));
+  background: color-mix(in srgb, var(--tint) 15%, var(--mg-surface));
+}
+
+.mgr .tile svg {
+  width: 20px;
+  height: 20px;
+}
+
+.mgr .pack-text {
+  min-width: 0;
+}
+
+.mgr .pack h3 {
+  font-family: var(--mg-heading-font);
+  margin: 0;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.3;
+}
+
+.mgr .pack p {
+  margin: 2px 0 0;
+}
+
+.mgr .pack .what {
+  color: var(--mg-muted);
+}
+
+.mgr .pack .details,
+.mgr .pack .progress-text {
+  color: var(--mg-faint);
+  font-size: 12px;
+}
+
+.mgr .pack .progress-text {
+  color: var(--mg-accent-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.mgr .pack .problem {
+  color: var(--mg-danger);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.mgr .pack-action {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mgr .pack-meter {
+  grid-column: 2 / -1;
+  margin-top: 10px;
+}

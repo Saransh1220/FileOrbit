@@ -1,0 +1,113 @@
+.mgr .side {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px 12px 14px;
+  border-right: var(--mg-border) solid var(--mg-line);
+  background: var(--mg-side);
+}
+
+.mgr .brand {
+  font-family: var(--mg-heading-font);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px;
+  font-size: 14px;
+  font-weight: var(--mg-heading-weight);
+  letter-spacing: var(--mg-heading-tracking);
+}
+
+.mgr .logo {
+  flex: none;
+  color: var(--mg-fg);
+}
+
+.mgr .nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mgr .nav button {
+  appearance: none;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: var(--mg-border) solid transparent;
+  border-radius: var(--mg-radius-sm);
+  font: inherit;
+  font-weight: 550;
+  text-align: left;
+  color: var(--mg-muted);
+  background: transparent;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.mgr .nav button:hover {
+  color: var(--mg-fg);
+  background: color-mix(in srgb, var(--mg-fg) 6%, transparent);
+}
+
+.mgr .nav button.active {
+  color: var(--mg-active-fg);
+  background: var(--mg-active);
+  border-color: var(--mg-active-border);
+}
+
+.mgr .nav-icon {
+  flex: none;
+}
+
+.mgr .attention {
+  margin-left: auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--mg-danger);
+}
+
+.mgr .foot {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: auto;
+  padding: 8px 10px;
+  border: var(--mg-border) solid var(--mg-line);
+  border-radius: var(--mg-radius-sm);
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  color: var(--mg-muted);
+  background: var(--mg-surface);
+  cursor: pointer;
+}
+
+.mgr .foot:hover {
+  color: var(--mg-fg);
+}
+
+.mgr .foot-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tone);
+}
+
+.mgr .foot.ok {
+  --tone: var(--mg-ok);
+}
+.mgr .foot.warn {
+  --tone: var(--mg-warn);
+}
+.mgr .foot.danger {
+  --tone: var(--mg-danger);
+}
+.mgr .foot.neutral {
+  --tone: var(--mg-faint);
+}

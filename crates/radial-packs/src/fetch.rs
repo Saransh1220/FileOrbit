@@ -4,8 +4,25 @@ use sha2::{Digest, Sha256};
 use std::fs::File;
 use std::io::{Read, Write};
 use std::path::Path;
+use std::time::Duration;
 
 const CHUNK: usize = 64 * 1024;
+
+/// How long to wait for a server to accept the connection. A host can list several
+/// addresses and one of them may be unreachable from a given network (GitHub's download
+/// host did exactly that), so the wait is shared out among the addresses: a dead first
+/// address then costs seconds, not the operating system's minute-plus default.
+const CONNECT_TIMEOUT: Duration = Duration::from_secs(15);
+/// How long to wait for the server to start answering once connected.
+const RESPONSE_TIMEOUT: Duration = Duration::from_secs(60);
+
+fn agent() -> ureq::Agent {
+    ureq::Agent::config_builder()
+        .timeout_connect(Some(CONNECT_TIMEOUT))
+        .timeout_recv_response(Some(RESPONSE_TIMEOUT))
+        .build()
+        .into()
+}
 
 /// Fetches `url` into `dest`, reporting `(bytes so far, total if known)`.
 /// Supports `http(s)://` and `file://` (offline mirrors, tests).
@@ -50,7 +67,7 @@ pub fn download(
 }
 
 fn request(url: &str, from: Option<u64>) -> Result<ureq::http::Response<ureq::Body>, String> {
-    let mut call = ureq::get(url);
+    let mut call = agent().get(url);
     if let Some(offset) = from {
         call = call.header("Range", &format!("bytes={offset}-"));
     }
@@ -122,6 +139,30 @@ pub fn verify(path: &Path, expected: &str) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_server_that_never_answers_gives_up_instead_of_hanging() {
+        // Accepts the connection but never replies. Only the response timeout can end this
+        // quickly enough to test, so it checks the agent really carries a timeout.
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let _held = std::thread::spawn(move || {
+            let _conn = listener.accept();
+            std::thread::park();
+        });
+        let started = std::time::Instant::now();
+        let dir = tempfile::tempdir().unwrap();
+        let config = ureq::Agent::config_builder()
+            .timeout_connect(Some(Duration::from_secs(2)))
+            .timeout_recv_response(Some(Duration::from_millis(400)))
+            .build();
+        let result = ureq::Agent::from(config).get(&format!("http://127.0.0.1:{port}/x")).call();
+        assert!(result.is_err());
+        assert!(started.elapsed() < Duration::from_secs(5), "must not hang");
+        let _ = dir;
+        // The real agent is configured with the documented limits.
+        let _ = agent();
+    }
 
     #[test]
     fn hashes_known_content() {

@@ -69,3 +69,45 @@ fn a_file_that_is_not_a_pdf_gets_a_clear_message() {
     let error = library.open(&path, None).err().expect("opening fails");
     assert!(error.contains("fake.pdf") && error.contains("damaged"), "{error}");
 }
+
+/// The same thread loading the library again while it still holds it must carry on, and a
+/// different thread must still wait until the first thread is completely done.
+#[test]
+fn loading_twice_on_one_thread_does_not_deadlock_but_other_threads_still_wait() {
+    if binaries::find(Tool::Pdfium).is_err() {
+        eprintln!("skipping: the PDF tools pack is not installed");
+        return;
+    }
+    let (events, log) = std::sync::mpsc::channel::<&'static str>();
+    let (inside, entered) = std::sync::mpsc::channel::<()>();
+
+    let first = {
+        let events = events.clone();
+        std::thread::spawn(move || {
+            let outer = Library::load().unwrap();
+            inside.send(()).unwrap();
+            let inner = Library::load().unwrap(); // would hang forever if it waited for itself
+            events.send("first: nested load done").unwrap();
+            // Give the other thread every chance to (wrongly) slip in while we still hold it.
+            for _ in 0..50 {
+                std::thread::yield_now();
+            }
+            drop(inner);
+            drop(outer);
+            events.send("first: released").unwrap();
+        })
+    };
+    entered.recv().unwrap();
+    let second = {
+        let events = events.clone();
+        std::thread::spawn(move || {
+            let _held = Library::load().unwrap();
+            events.send("second: got it").unwrap();
+        })
+    };
+    first.join().unwrap();
+    second.join().unwrap();
+    drop(events);
+    let order: Vec<_> = log.iter().collect();
+    assert_eq!(order, ["first: nested load done", "first: released", "second: got it"]);
+}

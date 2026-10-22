@@ -1,0 +1,57 @@
+.it .pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.it .size-pair {
+  align-items: end;
+}
+
+.it .note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--mg-muted);
+}
+
+.it .note.warn {
+  color: var(--mg-warn);
+}
+
+.it .chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.it .chips button {
+  appearance: none;
+  min-height: 28px;
+  padding: 0 11px;
+  border: var(--mg-border) solid var(--mg-line);
+  border-radius: 999px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--mg-fg) 72%, transparent);
+  background: var(--mg-surface);
+  cursor: pointer;
+}
+
+.it .chips button:hover:not(.on) {
+  color: var(--mg-fg);
+}
+
+.it .chips button.on {
+  color: var(--mg-active-fg);
+  background: var(--mg-active);
+  border-color: var(--mg-active-border);
+}
+
+.it .presets {
+  display: grid;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--mg-muted);
+}

@@ -11,7 +11,8 @@ export type IconKind =
   | "slides"
   | "book"
   | "merge"
-  | "organize";
+  | "organize"
+  | "resize";
 
 const BY_FORMAT: Record<string, IconKind> = {
   pdf: "pdf",
@@ -46,6 +47,7 @@ const BY_FORMAT: Record<string, IconKind> = {
   // Actions that work on the whole selection, not formats.
   merge: "merge",
   organize: "organize",
+  resize: "resize",
 };
 
 export const iconKindFor = (formatId: string): IconKind => BY_FORMAT[formatId] ?? "doc";
@@ -67,4 +69,6 @@ export const PALETTE: Record<IconKind, string> = {
   merge: "var(--k-pdf)",
   // The page editor works on a PDF, so it wears the PDF color too.
   organize: "var(--k-pdf)",
+  // The picture tool works on pictures, so it wears the picture color.
+  resize: "var(--k-image)",
 };

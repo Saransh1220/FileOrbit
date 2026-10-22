@@ -15,7 +15,7 @@ const SETS: Record<string, Wedge[]> = {
   // Several selected files: a tool wedge first (Merge or Combine), then what they share.
   pdf: [...toWedges(["png", "jpg", "txt", "docx", "odt"]), { id: "organize", label: "ORGANIZE", tool: true }],
   pdfs: [{ id: "merge", label: "MERGE", tool: true }, ...toWedges(["png", "jpg", "txt", "docx", "odt"])],
-  pictures: [{ id: "merge", label: "COMBINE", tool: true }, ...toWedges(["jpg", "webp", "tiff", "bmp", "gif", "pdf"])],
+  pictures: [{ id: "merge", label: "COMBINE", tool: true }, ...toWedges(["jpg", "webp", "tiff", "bmp", "gif", "pdf"]), { id: "resize", label: "RESIZE", tool: true }],
   mixed: toWedges(["pdf", "docx", "html", "md", "png", "mp3", "mp4", "xlsx"]),
   none: [],
 };

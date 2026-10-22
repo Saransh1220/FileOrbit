@@ -171,3 +171,28 @@ fn a_pdf_becomes_a_word_document_through_libreoffice() {
     std::io::Read::read_to_string(&mut archive.by_name("word/document.xml").unwrap(), &mut xml).unwrap();
     assert!(xml.contains("Page 2 of 2"), "the page text should be in the document");
 }
+
+/// PDFium crashes the whole process if two threads work in it at once (seen on macOS),
+/// and the app does exactly that when a conversion, a merge and the editor overlap.
+/// Every use takes turns, so threads that each build a PDF and convert it, all at the
+/// same time, must all succeed.
+#[test]
+fn many_threads_creating_and_converting_at_once_take_turns_instead_of_crashing() {
+    if missing(Tool::Pdfium) {
+        return;
+    }
+    let dir = scratch("threads");
+
+    let workers: Vec<_> = (0..16u64)
+        .map(|n| {
+            let input = dir.join(format!("t{n}.pdf"));
+            std::thread::spawn(move || {
+                make_pdf(&input, 4);
+                convert_file(&input, if n % 2 == 0 { "png" } else { "txt" }, 100 + n)
+            })
+        })
+        .collect();
+    for worker in workers {
+        worker.join().expect("a worker thread panicked").expect("a conversion failed");
+    }
+}

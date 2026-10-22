@@ -1,6 +1,7 @@
 mod design;
 pub mod engine;
 mod hook;
+mod imagetool;
 mod manager;
 mod overlay;
 #[cfg(target_os = "windows")]
@@ -66,9 +67,15 @@ pub fn run() {
         .manage(manager::InstallLock::default())
         .manage(engine::pending::PendingJobs::default())
         .manage(workspace::WorkspaceFiles::default())
+        .manage(imagetool::ImageToolFiles::default())
         .invoke_handler(tauri::generate_handler![
             hide_overlay,
             hide_toast,
+            imagetool::imagetool_files,
+            imagetool::imagetool_info,
+            imagetool::imagetool_preview,
+            imagetool::imagetool_save,
+            imagetool::imagetool_thumbnail,
             install_pack_for_job,
             design::get_design,
             manager::clear_downloads,
@@ -90,8 +97,8 @@ pub fn run() {
         .on_window_event(|window, event| {
             // The overlay and toast are created once and reused; closing one
             // (Alt+F4) must hide it, never destroy it.
-            // The page editor is the exception: closing it really closes it.
-            if window.label() != "main" && window.label() != "workspace" {
+            // The page editor and the picture tool are the exception: closing it really closes it.
+            if window.label() != "main" && window.label() != "workspace" && window.label() != "imagetool" {
                 if let WindowEvent::CloseRequested { api, .. } = event {
                     api.prevent_close();
                     let _ = window.hide();

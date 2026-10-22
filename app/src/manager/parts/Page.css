@@ -1,0 +1,22 @@
+.mgr .page {
+  max-width: 620px;
+}
+
+.mgr .page > header {
+  margin-bottom: 22px;
+}
+
+.mgr .page h1 {
+  font-family: var(--mg-heading-font);
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: var(--mg-heading-weight);
+  letter-spacing: var(--mg-heading-tracking);
+}
+
+.mgr .page > header p {
+  margin: 6px 0 0;
+  max-width: 52ch;
+  color: var(--mg-muted);
+}

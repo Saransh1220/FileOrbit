@@ -1,0 +1,94 @@
+.mgr .status-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 18px;
+  border: var(--mg-border) solid color-mix(in srgb, var(--tone) 40%, var(--mg-line));
+  border-radius: var(--mg-radius);
+  background: color-mix(in srgb, var(--tone) 8%, var(--mg-surface));
+  box-shadow: var(--mg-shadow);
+}
+
+.mgr .status-card.ok {
+  --tone: var(--mg-ok);
+}
+.mgr .status-card.warn {
+  --tone: var(--mg-warn);
+}
+.mgr .status-card.danger {
+  --tone: var(--mg-danger);
+}
+.mgr .status-card.neutral {
+  --tone: var(--mg-muted);
+}
+
+.mgr .status-dot {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  margin-top: 4px;
+  border-radius: 50%;
+  background: var(--tone);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--tone) 22%, transparent);
+}
+
+.mgr .status-card h2 {
+  font-family: var(--mg-heading-font);
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.mgr .status-card p {
+  margin: 4px 0 0;
+  color: var(--mg-muted);
+}
+
+.mgr .admin-note {
+  margin: 12px 0 0;
+  color: var(--mg-muted);
+  font-size: 12px;
+}
+
+.mgr .eyebrow {
+  margin: 28px 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mg-faint);
+}
+
+.mgr .steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: var(--mg-border) solid var(--mg-line);
+  border-radius: var(--mg-radius);
+  background: var(--mg-surface);
+  box-shadow: var(--mg-shadow);
+}
+
+.mgr .steps li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 16px;
+}
+
+.mgr .steps li + li {
+  border-top: var(--mg-border) solid var(--mg-line);
+}
+
+.mgr .step-number {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border: var(--mg-border) solid var(--mg-line);
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--mg-accent-text);
+}

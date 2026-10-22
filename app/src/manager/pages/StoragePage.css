@@ -1,0 +1,47 @@
+.mgr .usage {
+  margin-bottom: 18px;
+}
+
+.mgr .usage-bar {
+  display: flex;
+  height: 10px;
+  overflow: hidden;
+  border: var(--mg-border) solid var(--mg-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--mg-fg) 5%, var(--mg-surface));
+}
+
+.mgr .usage-bar i {
+  display: block;
+  height: 100%;
+}
+
+.mgr .usage-bar .installed {
+  background: var(--mg-accent);
+}
+
+.mgr .usage-bar .kept {
+  background: color-mix(in srgb, var(--mg-accent) 40%, var(--mg-surface));
+}
+
+.mgr .usage-legend {
+  display: flex;
+  gap: 18px;
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--mg-muted);
+}
+
+.mgr .usage-legend span::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--mg-accent);
+}
+
+.mgr .usage-legend .kept::before {
+  background: color-mix(in srgb, var(--mg-accent) 40%, var(--mg-surface));
+}

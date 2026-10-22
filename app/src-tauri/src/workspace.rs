@@ -51,7 +51,7 @@ pub fn open(app: &AppHandle, files: Vec<PathBuf>) {
 /// Puts the window in front and gives it focus. Windows refuses to focus a window for a
 /// program that is not in front (this one runs from the tray, and the drag came from
 /// Explorer), so it is made topmost for a moment and then released.
-fn bring_to_front(window: &tauri::WebviewWindow) {
+pub(crate) fn bring_to_front(window: &tauri::WebviewWindow) {
     let _ = window.unminimize();
     let _ = window.show();
     let _ = window.set_always_on_top(true);
@@ -78,7 +78,7 @@ pub fn workspace_open(path: String) -> Result<OpenedFile, String> {
     let _turn = take_turn();
     let file = PathBuf::from(&path);
     let library = Library::load()?;
-    let pages = thumbs::shapes(library, &file, None)?;
+    let pages = thumbs::shapes(&library, &file, None)?;
     if pages.is_empty() {
         return Err("this PDF has no pages".into());
     }
@@ -91,7 +91,7 @@ pub fn workspace_open(path: String) -> Result<OpenedFile, String> {
 pub fn workspace_thumbnail(path: String, page: u32, width: u32) -> Result<Response, String> {
     let _turn = take_turn();
     let library = Library::load()?;
-    thumbs::thumbnail(library, &PathBuf::from(path), page, width).map(Response::new)
+    thumbs::thumbnail(&library, &PathBuf::from(path), page, width).map(Response::new)
 }
 
 #[derive(Serialize)]
@@ -107,8 +107,8 @@ pub fn workspace_save(files: Vec<String>, pages: Vec<PageRef>, kind: SaveKind, p
     let inputs: Vec<PathBuf> = files.into_iter().map(PathBuf::from).collect();
     let library = Library::load()?;
     let (path, count) = match part {
-        Some(number) => plan::save_part(library, &inputs, &pages, number)?,
-        None => plan::save_next_to_first(library, &inputs, &pages, kind)?,
+        Some(number) => plan::save_part(&library, &inputs, &pages, number)?,
+        None => plan::save_next_to_first(&library, &inputs, &pages, kind)?,
     };
     Ok(Saved { path: path.to_string_lossy().into_owned(), pages: count })
 }

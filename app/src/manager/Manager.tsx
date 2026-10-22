@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from "react";
 import { useDesign } from "../design/useDesign";
 import { ManagerView } from "./ManagerView";
 import type { DesignChoice, HookStatus, Overview, PackUpdate } from "./types";
-import "./ManagerSkins.css";
 
 const message = (error: unknown) => (typeof error === "string" ? error : error instanceof Error ? error.message : "Something went wrong.");
 

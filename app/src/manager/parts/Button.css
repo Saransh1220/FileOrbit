@@ -1,0 +1,64 @@
+.mgr .btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 0 14px;
+  border: var(--mg-border) solid var(--mg-line);
+  border-radius: var(--mg-radius-sm);
+  font: inherit;
+  font-weight: 600;
+  color: var(--mg-fg);
+  background: var(--mg-surface);
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
+}
+
+.mgr .btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--mg-fg) 6%, var(--mg-surface));
+}
+
+.mgr .btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.mgr .btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.mgr .btn.primary {
+  color: var(--mg-on-accent);
+  background: var(--mg-accent);
+  border-color: var(--mg-primary-border);
+  box-shadow: var(--mg-primary-shadow);
+}
+
+.mgr .btn.primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--mg-accent) 88%, #000);
+}
+
+.mgr .btn.danger {
+  color: var(--mg-danger);
+  border-color: color-mix(in srgb, var(--mg-danger) 45%, var(--mg-line));
+}
+
+.mgr .btn.quiet {
+  border-color: transparent;
+  background: transparent;
+  color: var(--mg-muted);
+}
+
+.mgr .btn.quiet:hover:not(:disabled) {
+  color: var(--mg-fg);
+  background: color-mix(in srgb, var(--mg-fg) 7%, transparent);
+}
+
+.mgr .btn:focus-visible,
+.mgr .nav button:focus-visible,
+.mgr .theme:focus-visible {
+  outline: 2px solid var(--mg-accent);
+  outline-offset: 2px;
+}

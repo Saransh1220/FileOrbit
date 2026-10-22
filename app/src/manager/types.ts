@@ -12,7 +12,10 @@ export interface PackInfo {
   title: string;
   description: string;
   engines: EngineInfo[];
+  /** Usable now: installed by us, or every program it needs is already on this computer. */
   installed: boolean;
+  /** Installed by us, so it can be removed. False when only the computer's own copy is used. */
+  managed: boolean;
   /** Download size on this platform; null when nothing is published for it. */
   download_bytes: number | null;
   disk_bytes: number;

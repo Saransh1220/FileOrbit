@@ -118,6 +118,7 @@ pub fn progress_of(event: &Event, elapsed: Duration) -> Progress {
             total.filter(|t| *t > 0).map(|t| ((done * 100) / t).min(100) as u8),
             download_text::downloading(engine, *done, *total, elapsed),
         ),
+        Event::Connecting { engine } => (None, format!("Connecting to download {engine}")),
         Event::Verifying { engine } => (None, format!("Checking the {engine} download")),
         Event::UsingCached { engine } => (None, format!("Using the {engine} download from earlier")),
         Event::Extracting { engine } => (None, format!("Unpacking {engine}, this can take a minute")),
@@ -185,6 +186,10 @@ fn job_base(id: u64, inputs: &[PathBuf], target_id: &str) -> JobUpdate {
 
 /// The first pack any of the files needs and does not have yet.
 fn first_missing_pack(inputs: &[PathBuf], target_id: &str) -> Option<MissingPack> {
+    if target_id == selection::PICTURE_TOOL {
+        // The picture tool is built in: no converter has to be installed.
+        return None;
+    }
     if target_id == selection::MERGE || target_id == selection::ORGANIZE {
         // Merging, combining pictures and the page editor all use the PDF library, whatever the inputs are.
         return binaries::find(Tool::Pdfium).is_err().then(|| MissingPack {
@@ -204,7 +209,7 @@ pub fn merge_files(inputs: &[PathBuf]) -> Result<(PathBuf, u32), String> {
     }
     let library = super::pdf::Library::load()?;
     let output = naming::reserve_with_suffix(first, " (merged)", "pdf")?;
-    match super::pdf::merge::merge(library, inputs, &output) {
+    match super::pdf::merge::merge(&library, inputs, &output) {
         Ok(merged) => Ok((output, merged.pages)),
         Err(message) => {
             let _ = std::fs::remove_file(&output);
@@ -231,6 +236,10 @@ fn run(app: AppHandle, id: u64, inputs: Vec<PathBuf>, target_id: String) {
     if target_id == selection::ORGANIZE {
         // The editor is its own window; there is nothing to show in the toast.
         crate::workspace::open(&app, inputs);
+        return;
+    }
+    if target_id == selection::PICTURE_TOOL {
+        crate::imagetool::open(&app, inputs);
         return;
     }
     crate::toast::publish(&app, &base);

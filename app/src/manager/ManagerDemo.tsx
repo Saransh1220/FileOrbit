@@ -1,17 +1,15 @@
 import { useEffect, useState } from "react";
 import { ManagerView } from "./ManagerView";
+import type { SectionId } from "./sections";
 import type { HookStatus, Overview, PackUpdate } from "./types";
-import "./ManagerSkins.css";
 
 const DESIGNS: [string, string][] = [
   ["current", "Current"],
   ["bold", "Bold"],
   ["brutal", "Brutal"],
-  ["petals", "Petals"],
-  ["compass", "Compass"],
-  ["fan", "Fan"],
-  ["hex", "Hex"],
 ];
+/** A theme the app offers but this window has no design for: shown to check the fallback. */
+const OTHER_DESIGN: [string, string] = ["petals", "Petals"];
 
 const OVERVIEW: Overview = {
   folder: "C:\\Users\\you\\AppData\\Local\\Radial Convert",
@@ -19,11 +17,24 @@ const OVERVIEW: Overview = {
   installed_bytes: 183_000_000,
   packs: [
     {
+      id: "pdf",
+      title: "PDF tools",
+      description: "PDF pages to PNG, JPG and text; merge, reorder and combine",
+      engines: [{ name: "PDFium", version: "158.0.8111", source: "downloaded" }],
+      installed: true,
+      managed: true,
+      download_bytes: 3_541_773,
+      disk_bytes: 9_800_000,
+      shared_with: [],
+      busy: false,
+    },
+    {
       id: "documents",
       title: "Documents",
       description: "Word, Excel, PowerPoint, RTF to PDF and to each other",
       engines: [{ name: "LibreOffice", version: null, source: null }],
       installed: false,
+      managed: false,
       download_bytes: 374_870_016,
       disk_bytes: 0,
       shared_with: [],
@@ -33,8 +44,9 @@ const OVERVIEW: Overview = {
       id: "text",
       title: "Text & Markup",
       description: "Markdown, HTML, EPUB, TeX, plain text",
-      engines: [{ name: "pandoc", version: null, source: null }],
-      installed: false,
+      engines: [{ name: "pandoc", version: null, source: "system" }],
+      installed: true,
+      managed: false,
       download_bytes: 42_154_914,
       disk_bytes: 0,
       shared_with: [],
@@ -46,6 +58,7 @@ const OVERVIEW: Overview = {
       description: "MP3, WAV, FLAC, AAC, M4A, OGG",
       engines: [{ name: "ffmpeg", version: "9.0.2", source: "downloaded" }],
       installed: true,
+      managed: true,
       download_bytes: 77_232_696,
       disk_bytes: 183_000_000,
       shared_with: ["Video", "Images"],
@@ -57,6 +70,7 @@ const OVERVIEW: Overview = {
       description: "MP4, MOV, MKV, WEBM, GIF, extract audio",
       engines: [{ name: "ffmpeg", version: "9.0.2", source: "downloaded" }],
       installed: false,
+      managed: false,
       download_bytes: 77_232_696,
       disk_bytes: 183_000_000,
       shared_with: ["Audio", "Images"],
@@ -68,6 +82,7 @@ const OVERVIEW: Overview = {
       description: "PNG, JPG, WEBP, TIFF, BMP, GIF",
       engines: [{ name: "ffmpeg", version: "9.0.2", source: "downloaded" }],
       installed: true,
+      managed: true,
       download_bytes: 77_232_696,
       disk_bytes: 183_000_000,
       shared_with: ["Audio", "Video"],
@@ -101,7 +116,9 @@ const UPDATES: Record<string, Record<string, PackUpdate>> = {
   },
 };
 
-const bar = { display: "flex", gap: 6, flexWrap: "wrap" as const, padding: "10px 12px", background: "#fff", borderBottom: "1px solid #ddd" };
+const bar = { display: "flex", gap: 6, flexWrap: "wrap" as const, padding: "10px 12px", background: "#fff", borderBottom: "1px solid #ddd", color: "#111" };
+
+const PAGES: SectionId[] = ["converters", "appearance", "storage", "shortcut"];
 
 /** Dev-only playground (index.html#manager-demo) for judging the manager window without building the app. */
 export function ManagerDemo() {
@@ -109,10 +126,12 @@ export function ManagerDemo() {
   const [updates, setUpdates] = useState("none");
   const [status, setStatus] = useState<HookStatus>("listening");
   const [empty, setEmpty] = useState(false);
+  const [page, setPage] = useState<SectionId>("converters");
+  const [problem, setProblem] = useState(false);
 
+  // The real app sets this on <html> for every theme, "current" included.
   useEffect(() => {
-    if (design === "current") delete document.documentElement.dataset.design;
-    else document.documentElement.dataset.design = design;
+    document.documentElement.dataset.design = design;
   }, [design]);
 
   const choose = (label: string, value: string, current: string, set: (v: string) => void) => (
@@ -122,26 +141,32 @@ export function ManagerDemo() {
   );
 
   return (
-    <div style={{ height: "100vh", overflow: "auto" }}>
+    <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
       <div style={bar}>
-        {DESIGNS.map(([id, label]) => choose(label, id, design, setDesign))}
+        {[...DESIGNS, OTHER_DESIGN].map(([id, label]) => choose(label, id, design, setDesign))}
+        {PAGES.map((p) => choose(`page: ${p}`, p, page, (v) => setPage(v as SectionId)))}
         {Object.keys(UPDATES).map((k) => choose(`rows: ${k}`, k, updates, setUpdates))}
         {(["listening", "permission-denied", "starting"] as HookStatus[]).map((s) => choose(s, s, status, (v) => setStatus(v as HookStatus)))}
         <button onClick={() => setEmpty(!empty)} style={{ fontWeight: empty ? 700 : 400 }}>loading</button>
+        <button onClick={() => setProblem(!problem)} style={{ fontWeight: problem ? 700 : 400 }}>problem</button>
       </div>
-      <ManagerView
-        status={status}
-        overview={empty ? null : OVERVIEW}
-        updates={UPDATES[updates]}
-        designs={DESIGNS}
-        design={design}
-        problem={null}
-        onInstall={() => {}}
-        onRemove={() => {}}
-        onClearDownloads={() => {}}
-        onOpenFolder={() => {}}
-        onDesign={setDesign}
-      />
+      <div style={{ flex: 1, minHeight: 0, display: "grid" }}>
+        <ManagerView
+          key={page}
+          initialSection={page}
+          status={status}
+          overview={empty ? null : OVERVIEW}
+          updates={UPDATES[updates]}
+          designs={[...DESIGNS, OTHER_DESIGN]}
+          design={design}
+          problem={problem ? "Another install is running. Wait for it to finish first." : null}
+          onInstall={() => {}}
+          onRemove={() => {}}
+          onClearDownloads={() => {}}
+          onOpenFolder={() => {}}
+          onDesign={setDesign}
+        />
+      </div>
     </div>
   );
 }

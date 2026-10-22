@@ -1,7 +1,12 @@
-import { formatBytes } from "./format";
-import { STATUS_HELP, STATUS_LABEL, WINDOWS_ADMIN_NOTE } from "./hookStatus";
-import { PackRow } from "./PackRow";
+import { useState } from "react";
+import { AppearancePage } from "./pages/AppearancePage";
+import { ConvertersPage } from "./pages/ConvertersPage";
+import { ShortcutPage } from "./pages/ShortcutPage";
+import { StoragePage } from "./pages/StoragePage";
+import { DEFAULT_SECTION, type SectionId } from "./sections";
+import { Sidebar } from "./shell/Sidebar";
 import type { DesignChoice, HookStatus, Overview, PackUpdate } from "./types";
+import "./skins/tokens.css";
 import "./ManagerView.css";
 
 export interface ManagerViewProps {
@@ -11,8 +16,10 @@ export interface ManagerViewProps {
   updates: Record<string, PackUpdate>;
   designs: DesignChoice[];
   design: string;
-  /** A problem with the last action, shown quietly at the top of the list. */
+  /** A problem with the last action, shown above the converter list. */
   problem: string | null;
+  /** The page to open first (the app opens on Converters). */
+  initialSection?: SectionId;
   onInstall: (pack: string) => void;
   onRemove: (pack: string) => void;
   onClearDownloads: () => void;
@@ -20,104 +27,25 @@ export interface ManagerViewProps {
   onDesign: (id: string) => void;
 }
 
-/** One label and value on a hairline, with an optional action at the end. */
-function Line({ label, value, action }: { label: string; value: string; action?: React.ReactNode }) {
-  return (
-    <div className="line">
-      <span className="label">{label}</span>
-      <span className="value">{value}</span>
-      <span className="end">{action}</span>
-    </div>
-  );
-}
-
 /**
- * The manager window. State comes from props so every state can be previewed
- * in the browser without Tauri.
+ * The manager window: a sidebar and one page at a time. State comes from props
+ * so every state can be previewed in the browser without Tauri.
  */
 export function ManagerView(props: ManagerViewProps) {
-  const { status, overview, updates, designs, design, problem } = props;
-  const help = STATUS_HELP[status];
-  const onWindows = navigator.userAgent.includes("Windows");
+  const [section, setSection] = useState<SectionId>(props.initialSection ?? DEFAULT_SECTION);
 
   return (
-    <main className="manager">
-      <header>
-        <h1>Radial Convert</h1>
-        <p className={`status ${status}`}>
-          <i aria-hidden />
-          {STATUS_LABEL[status]}
-        </p>
-      </header>
-      {help && <p className="help">{help}</p>}
-      {onWindows && status === "listening" && <p className="note">{WINDOWS_ADMIN_NOTE}</p>}
-
-      <section>
-        <h2>Converters</h2>
-        <p className="intro">Hold Shift, drag a file, and drop it on a format. Each converter downloads once, when you choose it.</p>
-        {problem && <p className="problem">{problem}</p>}
-        {overview === null ? (
-          <p className="loading">Loading…</p>
-        ) : (
-          <ul>
-            {overview.packs.map((pack) => (
-              <PackRow
-                key={pack.id}
-                pack={pack}
-                update={updates[pack.id]}
-                onInstall={() => props.onInstall(pack.id)}
-                onRemove={() => props.onRemove(pack.id)}
-              />
-            ))}
-          </ul>
+    <div className="mgr">
+      <Sidebar section={section} status={props.status} onSelect={setSection} />
+      {/* Keyed by section so each page fades in as it opens. */}
+      <main key={section}>
+        {section === "converters" && (
+          <ConvertersPage overview={props.overview} updates={props.updates} problem={props.problem} onInstall={props.onInstall} onRemove={props.onRemove} />
         )}
-      </section>
-
-      {overview && (
-        <section>
-          <h2>Storage</h2>
-          <Line label="Installed converters" value={formatBytes(overview.installed_bytes)} />
-          <Line
-            label="Kept downloads"
-            value={formatBytes(overview.cache_bytes)}
-            action={
-              overview.cache_bytes > 0 && (
-                <button className="link" onClick={props.onClearDownloads}>
-                  Clear
-                </button>
-              )
-            }
-          />
-          <Line
-            label="Location"
-            value={overview.folder}
-            action={
-              <button className="link" onClick={props.onOpenFolder}>
-                Open
-              </button>
-            }
-          />
-        </section>
-      )}
-
-      <section>
-        <h2>Appearance</h2>
-        <div className="line">
-          <label className="label" htmlFor="design">
-            Theme
-          </label>
-          <span className="value" />
-          <span className="end">
-            <select id="design" value={design} onChange={(e) => props.onDesign(e.target.value)}>
-              {designs.map(([id, label]) => (
-                <option key={id} value={id}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </span>
-        </div>
-      </section>
-    </main>
+        {section === "appearance" && <AppearancePage designs={props.designs} design={props.design} onDesign={props.onDesign} />}
+        {section === "storage" && <StoragePage overview={props.overview} onClearDownloads={props.onClearDownloads} onOpenFolder={props.onOpenFolder} />}
+        {section === "shortcut" && <ShortcutPage status={props.status} />}
+      </main>
+    </div>
   );
 }

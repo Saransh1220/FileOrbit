@@ -1,0 +1,133 @@
+.it .files {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--mg-side);
+  border-right: var(--mg-border) solid var(--mg-line);
+}
+
+.it .files header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 14px 8px;
+}
+
+.it .files h2 {
+  margin: 0;
+  font-family: var(--mg-heading-font);
+  font-size: 12px;
+  font-weight: var(--mg-heading-weight);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--mg-muted);
+}
+
+.it .files .add {
+  appearance: none;
+  border: 0;
+  padding: 2px 4px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mg-accent-text);
+  background: none;
+  cursor: pointer;
+}
+
+.it .files ul {
+  flex: 1;
+  margin: 0;
+  padding: 0 8px 12px;
+  overflow-y: auto;
+  list-style: none;
+  display: grid;
+  align-content: start;
+  gap: 2px;
+}
+
+.it .files li {
+  position: relative;
+  border: var(--mg-border) solid transparent;
+  border-radius: var(--mg-radius-sm);
+}
+
+.it .files li.on {
+  background: var(--mg-active);
+  border-color: var(--mg-active-border);
+}
+
+.it .files .pick {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 28px 7px 8px;
+  border: 0;
+  font: inherit;
+  text-align: left;
+  color: var(--mg-fg);
+  background: none;
+  cursor: pointer;
+}
+
+.it .files li:not(.on) .pick:hover {
+  background: color-mix(in srgb, var(--mg-fg) 5%, transparent);
+  border-radius: var(--mg-radius-sm);
+}
+
+.it .files img {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  object-fit: cover;
+  border-radius: 5px;
+  background: var(--mg-line);
+}
+
+.it .files .meta {
+  display: grid;
+  min-width: 0;
+}
+
+.it .files strong {
+  overflow: hidden;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.it .files small {
+  font-size: 11.5px;
+  color: var(--mg-muted);
+}
+
+.it .files .drop {
+  appearance: none;
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--mg-faint);
+  background: none;
+  opacity: 0;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.it .files li:hover .drop,
+.it .files .drop:focus-visible {
+  opacity: 1;
+}
+
+.it .files .drop:hover {
+  color: var(--mg-danger);
+}

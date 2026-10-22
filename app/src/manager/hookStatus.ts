@@ -20,3 +20,26 @@ export const STATUS_HELP: Partial<Record<HookStatus, string>> = {
   unsupported: "Shift+drag detection is not available on this system yet.",
   error: "The Shift+drag listener could not start.",
 };
+
+export type Tone = "ok" | "neutral" | "warn" | "danger";
+
+/** The color family of each status: calm when it works, loud only when the user must act. */
+export const STATUS_TONE: Record<HookStatus, Tone> = {
+  starting: "neutral",
+  listening: "ok",
+  "permission-denied": "danger",
+  unsupported: "warn",
+  error: "danger",
+};
+
+/** Whether the sidebar should flag the Shift+drag section. */
+export const needsAttention = (status: HookStatus): boolean => STATUS_TONE[status] === "danger";
+
+/** A label short enough for the narrow sidebar footer. */
+export const STATUS_SHORT: Record<HookStatus, string> = {
+  starting: "Starting",
+  listening: "Shift+drag is on",
+  "permission-denied": "Needs permission",
+  unsupported: "Not supported",
+  error: "Not running",
+};
